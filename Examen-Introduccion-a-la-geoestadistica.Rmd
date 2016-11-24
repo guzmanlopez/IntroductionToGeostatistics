@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
+  pdf_document:
+    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
-    toc: yes
-  pdf_document:
     toc: yes
 ---
 
@@ -685,10 +685,10 @@ ggTend_MaizC2VsNapaDicC2 <- ggDatosRindeMaiz +
   labs(title = "", y = "Rendimiento maíz C2 (t/ha)", x = "Profundidad napa (m)")
 
 # Ver plots 
-grid.arrange(,
-             ncol = 4, nrow = 5, 
-             layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
-             )
+# grid.arrange(,
+#              ncol = 4, nrow = 5, 
+#              layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
+#              )
 
 ```
 
