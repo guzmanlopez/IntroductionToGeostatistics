@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -709,11 +709,37 @@ grid.arrange(ggTend_MaizC1VsLong, ggTend_MaizC1VsLat, ggTend_MaizC1VsElev, ggTen
 
 A partir de los gráficos de dispersión y suavizado de medias, no se observó una tendencia entre el rendimiento de maíz y la latitud o longitud. Sin embargo, se observaron tendencias negativas entre el rendimiento de maíz y la elevación y también con la profundidad de la napa para las dos campañas. Se observó que el rendimiento de maíz decrece con la elevación del terreno y la profundidad de la napa. Asimismo, se observó una tendencia positiva entre la profundidad de la napa y la elevación. 
 
-## Covarianza y correlación
+## Correlación
+
+Para cuantificar la relación entre las variables que presentaron tendencia se utilizó el coeficiente de correlación de Pearson.
 
 ```{r}
 
+NAs <- is.na(datosRindeMaiz@data$maizC1)
+
+# Rendimiento maíz vs Longitud
+cor(x = datosRindeMaiz@coords[!NAs,"Long"], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+cor(x = datosRindeMaiz@coords[,"Long"], y = datosRindeMaiz@data$maizC2, method = "pearson")
+
+# Rendimiento maíz vs Latitud
+cor(x = datosRindeMaiz@coords[!NAs,"Lat"], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+cor(x = datosRindeMaiz@coords[,"Lat"], y = datosRindeMaiz@data$maizC2, method = "pearson")
+
+# Rendimiento maíz vs Elevación
+cor(x = datosRindeMaiz@data$Elev[!NAs], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+cor(x = datosRindeMaiz@data$Elev, y = datosRindeMaiz@data$maizC2, method = "pearson")
+
+# Rendimiento maíz vs Profundidad de la napa
+cor(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+cor(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$maizC2, method = "pearson")
+
+# Profundidad de la napa vs Elevación
+cor(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$Elev[!NAs], method = "pearson")
+cor(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$Elev, method = "pearson")
+
 ```
+
+
 
 
 ## Índices de autocorrelación
@@ -724,7 +750,7 @@ A partir de los gráficos de dispersión y suavizado de medias, no se observó u
 
 Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") del rendimiento de maíz y las covariables ambientales.
 
-```{r}
+```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
 # Mapa de puntos de rendimiento de maíz para el lote
 spplot(obj = datosRindeMaiz, zcol = c("maizC1", "maizC2"), main = "Rendimiento de maíz (t/ha)")
