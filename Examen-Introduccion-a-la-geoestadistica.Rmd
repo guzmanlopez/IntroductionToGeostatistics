@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -128,7 +128,7 @@ str(datosRindeMaiz)
 
 Para ilustrar como la distribución de los datos de cada variable se ubica con respecto a su mediana o para identificar valores extremos se realizaron Histogramas y Diagramas de cajas para cada una de las variables.
 
-```{r, fig.height=8, fig.width=7, message=FALSE, warning=FALSE}
+```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
 # Ver histogramas de las variables
 ggDatosRindeMaiz <- ggplot(data = datosRindeMaiz@data)
@@ -498,7 +498,7 @@ Ninguna de las transformaciones de los datos permitió que se pudiera fallar en 
 
 ## Q-Q Plots
 
-```{r, fig.height=10, fig.width=8, message=FALSE, warning=FALSE}
+```{r, fig.height=14, fig.width=12, message=FALSE, warning=FALSE}
 
 # Q-Q plot rendimiento maíz (C1)
 ggQQmaizC1 <- ggDatosRindeMaiz + 
@@ -638,7 +638,9 @@ A partir del análisis de los Q-Q plots (cuantiles - cuantiles) se observó que 
 
 ## Análisis de tendencias
 
-```{r}
+Para analizar si existen tendencias entre el rendimiento de maíz y las covariables ambientales se realizaron gráficos de dispersión de puntos junto con lineas basadas en suavizados de la medias locales de los valores. 
+
+```{r, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
 
 # Rendimiento maíz vs Longitud
 ggTend_MaizC1VsLong <- ggDatosRindeMaiz +
@@ -684,15 +686,35 @@ ggTend_MaizC2VsNapaDicC2 <- ggDatosRindeMaiz +
   geom_smooth(aes(y = maizC2, x = NapaDicC2)) + 
   labs(title = "", y = "Rendimiento maíz C2 (t/ha)", x = "Profundidad napa (m)")
 
-# Ver plots 
-# grid.arrange(,
-#              ncol = 4, nrow = 5, 
-#              layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
-#              )
+# Profundidad de la napa vs Elevación
+ggTend_NapaDicC1VsElev <- ggDatosRindeMaiz +
+  geom_point(aes(x = Elev, y = NapaDicC1)) + 
+  geom_smooth(aes(x = Elev, y = NapaDicC1)) + 
+  labs(title = "", x = "Elevación (m)", y = "Profundidad napa (m)")
+
+ggTend_NapaDicC2VsElev <- ggDatosRindeMaiz +
+  geom_point(aes(y = Elev, x = NapaDicC2)) + 
+  geom_smooth(aes(y = Elev, x = NapaDicC2)) + 
+  labs(title = "", x = "Elevación (m)", y = "Profundidad napa (m)")
+
+# Ver plots
+X11()
+grid.arrange(ggTend_MaizC1VsLong, ggTend_MaizC1VsLat, ggTend_MaizC1VsElev, ggTend_MaizC1VsNapaDicC1,
+             ggTend_MaizC2VsLong, ggTend_MaizC2VsLat, ggTend_MaizC2VsElev, ggTend_MaizC2VsNapaDicC2,
+             ggTend_NapaDicC1VsElev, ggTend_NapaDicC2VsElev,
+             ncol = 4, nrow = 3,
+             layout_matrix = rbind(c(1,2,3,4), c(5,6,7,8), c(NA,9,10,NA))
+             )
+```
+
+A partir de los gráficos de dispersión y suavizado de medias, no se observó una tendencia entre el rendimiento de maíz y la latitud o longitud. Sin embargo, se observaron tendencias negativas entre el rendimiento de maíz y la elevación y también con la profundidad de la napa para las dos campañas. Se observó que el rendimiento de maíz decrece con la elevación del terreno y la profundidad de la napa. Asimismo, se observó una tendencia positiva entre la profundidad de la napa y la elevación. 
+
+## Covarianza y correlación
+
+```{r}
 
 ```
 
-## Covarianza y correlación
 
 ## Índices de autocorrelación
 

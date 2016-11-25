@@ -1,5 +1,4 @@
 
-
 # Ambiente de trabajo
 setwd("~/Documentos/GitHub/IntroductionToGeostatistics")
 
@@ -34,7 +33,6 @@ library('gridExtra')
 # Escalas de colores
 library('RColorBrewer')
 
-
 # Cargar datos ------------------------------------------------------------
 
 # Cargar datos
@@ -42,12 +40,9 @@ datosRindeMaiz <- read.csv(file = "data/DataExamenGeo16.csv", header = TRUE, sep
 
 # Mostrar las primeras seis filas
 head(datosRindeMaiz)
-
 coordinates(datosRindeMaiz) <- c("Long", "Lat")
 proj4string(datosRindeMaiz) <- CRS(as.character(NA))
-
 str(datosRindeMaiz)
-
 
 # Histogramas de variables ------------------------------------------------
 
@@ -138,6 +133,8 @@ ggBoxPlotElev <- ggDatosRindeMaiz +
   scale_y_continuous(limits = c(241.5, 247.5), breaks = seq(240, 248, 1), position = "top") + 
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) + 
   coord_flip()
+
+X11()
 
 # Ver plot 
 grid.arrange(ggBoxPlotMaizC1, 
@@ -476,6 +473,7 @@ ggQQElevBC <- ggDatosRindeMaiz +
   labs(title = "Box-Cox Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
 
 # Ver plots 
+X11()
 grid.arrange(ggQQmaizC1, ggQQmaizC2, ggQQNapaDicC1, ggQQNapaDicC2, ggQQElev,
              ggQQmaizC1Log, ggQQmaizC2Log, ggQQNapaDicC1Log, ggQQNapaDicC2Log, ggQQElevLog,
              ggQQmaizC1Sqrt, ggQQmaizC2Sqrt, ggQQNapaDicC1Sqrt, ggQQNapaDicC2Sqrt, ggQQElevSqrt,
@@ -531,6 +529,7 @@ ggTend_MaizC2VsNapaDicC2 <- ggDatosRindeMaiz +
   geom_smooth(aes(y = maizC2, x = NapaDicC2)) + 
   labs(title = "", y = "Rendimiento maíz C2 (t/ha)", x = "Profundidad napa (m)")
 
+X11()
 # Ver plots 
 # grid.arrange(,
 #              ncol = 4, nrow = 5, 
