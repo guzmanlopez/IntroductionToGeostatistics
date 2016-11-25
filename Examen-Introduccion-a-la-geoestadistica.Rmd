@@ -59,6 +59,7 @@ library('forecast')
 library('ggplot2')
 library('ggplot2')
 library('gridExtra')
+library('corrgram') # correlogramas
 
 # Escalas de colores
 library('RColorBrewer')
@@ -711,7 +712,7 @@ A partir de los gráficos de dispersión y suavizado de medias, no se observó u
 
 ## Correlación
 
-Para cuantificar la relación entre las variables que para las cuales se observó tendencia y para las que no, se utilizó el coeficiente de correlación de Pearson ($r$).
+Se calculó el coeficiente de correlación de Pearson ($r$) para cuantificar la relación entre las variables para las cuales se observó tendencia y para las que no. Para complementar la interpretación, se realizaron correlogramas para visualizar la matriz de correlaciones. 
 
 ```{r}
 
@@ -744,6 +745,38 @@ cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$Elev[!
 cor.test(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$Elev, method = "pearson")
 
 ```
+En los siguientes correlogramas las celdas de colores azules y con un patrón de relleno de líneas con una pendiente positiva representan correlaciones positivas y las celdas de colores rojos  con un patrón de relleno de líneas con una pendiente negativa representan correlaciones negativas. La intensidad del color es proporcional a la magnitud del coeficiente de correlación de Pearson.
+
+```{r}
+
+# Correlograma C1
+corrgram(data.frame("Rend.maíz" = datosRindeMaiz@data$maizC1,
+                    "Long" = datosRindeMaiz@coords[,"Long"], 
+                    "Lat" = datosRindeMaiz@coords[,"Lat"], 
+                    "Elev" = datosRindeMaiz@data$Elev,
+                    "Prof.napa" = datosRindeMaiz@data$NapaDicC1),
+         cor.method="pearson",
+         order = NULL,
+         lower.panel = panel.shade,
+         upper.panel = NULL, 
+         text.panel = panel.txt,
+         main = "Correlograma - C1")
+
+# Correlograma C2
+corrgram(data.frame("Rend.maíz" = datosRindeMaiz@data$maizC2,
+                    "Long" = datosRindeMaiz@coords[,"Long"], 
+                    "Lat" = datosRindeMaiz@coords[,"Lat"], 
+                    "Elev" = datosRindeMaiz@data$Elev,
+                    "Prof.napa" = datosRindeMaiz@data$NapaDicC2), 
+         cor.method="pearson",
+         order = NULL,
+         lower.panel = panel.shade,
+         upper.panel = NULL, 
+         text.panel = panel.txt,
+         main = "Correlograma - C2")
+
+```
+
 
 Se observó que la correlación entre el rendimiento de maíz con la latitud y la longitud fueron bajas ($0 < r < 0.35$), confirmando una tendencia despreciable. Por otro lado, se observó que la correlación fue alta para el rendimiento de maíz con la Elevación ($r_{C1} = -0.56$ y $r_{C2} = -0.73$) y aún fue mayor para la Profundidad de la napa ($r_{C1} = -0.86$ y $r_{C2} = -0.84$). Se confirmó que existe una tendencia negativa entre el rendimiento de maíz y la elevación y entre el rendimiento de maíz y la profundidad de la napa. También se observó que existe una correlación positiva entre la profundidad de la napa y la elevación ($r_{C1} = 0.67$ y $r_{C2} = 0.74$)
 
