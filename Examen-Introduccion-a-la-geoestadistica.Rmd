@@ -698,7 +698,7 @@ ggTend_NapaDicC2VsElev <- ggDatosRindeMaiz +
   labs(title = "", x = "Elevación (m)", y = "Profundidad napa (m)")
 
 # Ver plots
-X11()
+
 grid.arrange(ggTend_MaizC1VsLong, ggTend_MaizC1VsLat, ggTend_MaizC1VsElev, ggTend_MaizC1VsNapaDicC1,
              ggTend_MaizC2VsLong, ggTend_MaizC2VsLat, ggTend_MaizC2VsElev, ggTend_MaizC2VsNapaDicC2,
              ggTend_NapaDicC1VsElev, ggTend_NapaDicC2VsElev,
@@ -711,36 +711,41 @@ A partir de los gráficos de dispersión y suavizado de medias, no se observó u
 
 ## Correlación
 
-Para cuantificar la relación entre las variables que presentaron tendencia se utilizó el coeficiente de correlación de Pearson.
+Para cuantificar la relación entre las variables que para las cuales se observó tendencia y para las que no, se utilizó el coeficiente de correlación de Pearson ($r$).
 
 ```{r}
 
+# Datos vacíos en Rendimiento de maíz para C1
 NAs <- is.na(datosRindeMaiz@data$maizC1)
 
-# Rendimiento maíz vs Longitud
-cor(x = datosRindeMaiz@coords[!NAs,"Long"], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
-cor(x = datosRindeMaiz@coords[,"Long"], y = datosRindeMaiz@data$maizC2, method = "pearson")
+# Rendimiento maíz vs Longitud para C1
+cor.test(x = datosRindeMaiz@coords[!NAs,"Long"], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+# Rendimiento maíz vs Longitud para C2
+cor.test(x = datosRindeMaiz@coords[,"Long"], y = datosRindeMaiz@data$maizC2, method = "pearson")
 
-# Rendimiento maíz vs Latitud
-cor(x = datosRindeMaiz@coords[!NAs,"Lat"], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
-cor(x = datosRindeMaiz@coords[,"Lat"], y = datosRindeMaiz@data$maizC2, method = "pearson")
+# Rendimiento maíz vs Latitud para C1
+cor.test(x = datosRindeMaiz@coords[!NAs,"Lat"], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+# Rendimiento maíz vs Latitud para C2
+cor.test(x = datosRindeMaiz@coords[,"Lat"], y = datosRindeMaiz@data$maizC2, method = "pearson")
 
-# Rendimiento maíz vs Elevación
-cor(x = datosRindeMaiz@data$Elev[!NAs], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
-cor(x = datosRindeMaiz@data$Elev, y = datosRindeMaiz@data$maizC2, method = "pearson")
+# Rendimiento maíz vs Elevación para C1
+cor.test(x = datosRindeMaiz@data$Elev[!NAs], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+# Rendimiento maíz vs Elevación para C2
+cor.test(x = datosRindeMaiz@data$Elev, y = datosRindeMaiz@data$maizC2, method = "pearson")
 
-# Rendimiento maíz vs Profundidad de la napa
-cor(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
-cor(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$maizC2, method = "pearson")
+# Rendimiento maíz vs Profundidad de la napa para C1
+cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+# Rendimiento maíz vs Profundidad de la napa para C2
+cor.test(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$maizC2, method = "pearson")
 
-# Profundidad de la napa vs Elevación
-cor(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$Elev[!NAs], method = "pearson")
-cor(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$Elev, method = "pearson")
+# Profundidad de la napa vs Elevación para C1
+cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$Elev[!NAs], method = "pearson")
+# Profundidad de la napa vs Elevación para C2
+cor.test(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$Elev, method = "pearson")
 
 ```
 
-
-
+Se observó que la correlación entre el rendimiento de maíz con la latitud y la longitud fueron bajas ($0 < r < 0.35$), confirmando una tendencia despreciable. Por otro lado, se observó que la correlación fue alta para el rendimiento de maíz con la Elevación ($r_{C1} = -0.56$ y $r_{C2} = -0.73$) y aún fue mayor para la Profundidad de la napa ($r_{C1} = -0.86$ y $r_{C2} = -0.84$). Se confirmó que existe una tendencia negativa entre el rendimiento de maíz y la elevación y entre el rendimiento de maíz y la profundidad de la napa. También se observó que existe una correlación positiva entre la profundidad de la napa y la elevación ($r_{C1} = 0.67$ y $r_{C2} = 0.74$)
 
 ## Índices de autocorrelación
 
