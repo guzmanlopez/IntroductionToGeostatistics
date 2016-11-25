@@ -1,16 +1,9 @@
 # Introduction to Geostatistics
 
----
-title: "Evaluación curso Introducción a la Geoestadística"
-author: "Guzmán López"
-date: "30 de noviembre de 2016"
-output:
-  pdf_document:
-    toc: yes
-  html_document:
-    highlight: textmate
-    theme: cosmo
-    toc: yes
+## "Evaluación curso Introducción a la Geoestadística"
+### author: "Guzmán López"
+### date: "30 de noviembre de 2016"
+
 ---
 
 # Consigna
