@@ -51,6 +51,9 @@ library('reshape2')
 # Transformaciones Box-Cox
 library('forecast')
 
+# Autocorrelaciones - Indices de Moran y Geary
+library('ncf')
+
 # Gráficos
 
 # Versión dev de ggplot2, requiere:
@@ -146,7 +149,7 @@ ggHistMaizC1 <- ggDatosRindeMaiz +
 ggBoxPlotMaizC1 <- ggDatosRindeMaiz +
   geom_boxplot(aes(y = datosRindeMaiz$maizC1, x = rep("RM", length(datosRindeMaiz$maizC1))), 
                fill = "orange", col = "black", alpha = 0.8) + 
-  labs(title = "Camp.1", x = "", y = "") + 
+  labs(title = "C1", x = "", y = "") + 
   scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 2), position = "top") +
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
@@ -163,7 +166,7 @@ ggHistNapaDicC1 <- ggDatosRindeMaiz +
 ggBoxPlotNapaDicC1 <- ggDatosRindeMaiz +
   geom_boxplot(aes(y = datosRindeMaiz$NapaDicC1, x = rep("PN", length(datosRindeMaiz$NapaDicC1))), 
                fill = "darkblue", col = "black", alpha = 0.7) + 
-  labs(title = "Camp.1", x = "", y = "") + 
+  labs(title = "C1", x = "", y = "") + 
   scale_y_continuous(limits = c(1.5, 6.75), breaks = seq(1.5, 6.75, 1), position = "top") + 
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
@@ -180,7 +183,7 @@ ggHistMaizC2 <- ggDatosRindeMaiz +
 ggBoxPlotMaizC2 <- ggDatosRindeMaiz +
   geom_boxplot(aes(y = datosRindeMaiz$maizC2, x = rep("RM", length(datosRindeMaiz$maizC2))), 
                fill = "orange", col = "black", alpha = 0.8) + 
-  labs(title = "Camp.2", x = "", y = "") + 
+  labs(title = "C2", x = "", y = "") + 
   scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 2), position = "top") +
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
@@ -197,7 +200,7 @@ ggHistNapaDicC2 <- ggDatosRindeMaiz +
 ggBoxPlotNapaDicC2 <- ggDatosRindeMaiz +
   geom_boxplot(aes(y = datosRindeMaiz$NapaDicC2, x = rep("PN", length(datosRindeMaiz$NapaDicC2))), 
                fill = "darkblue", col = "black", alpha = 0.7) + 
-  labs(title = "Camp.2", x = "", y = "") + 
+  labs(title = "C2", x = "", y = "") + 
   scale_y_continuous(limits = c(1.5, 6.75), breaks = seq(1.5, 6.75, 1), position = "top") +
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
@@ -506,130 +509,151 @@ ggQQmaizC1 <- ggDatosRindeMaiz +
   geom_qq(aes(sample = maizC1)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$maizC1, na.rm = TRUE), 
               slope = sd(datosRindeMaiz@data$maizC1, na.rm = TRUE), col = "red") +
-  labs(title = "Rend.maíz C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Rend.maíz C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC1Log <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(maizC1))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$maizC1), na.rm = TRUE), 
               slope = sd(log(datosRindeMaiz@data$maizC1), na.rm = TRUE), col = "red") + 
-  labs(title = "Log Rend.maíz C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Rend.maíz C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC1Sqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(maizC1))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$maizC1), na.rm = TRUE), 
               slope = sd(sqrt(datosRindeMaiz@data$maizC1), na.rm = TRUE), col = "red") +
-  labs(title = "Raíz cuadrada Rend.maíz C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Rend.maíz C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC1BC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = maizC1BC)) +
   geom_abline(intercept = mean(maizC1BC, na.rm = TRUE), 
               slope = sd(maizC1BC, na.rm = TRUE), col = "red") +
-  labs(title = "Box-Cox Rend.maíz C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Rend.maíz C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 # Q-Q plot rendimiento maíz (C2)
 ggQQmaizC2 <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = maizC2)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$maizC2, na.rm = TRUE), 
               slope = sd(datosRindeMaiz@data$maizC2, na.rm = TRUE), col = "red") +
-  labs(title = "Rend.maíz C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Rend.maíz C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC2Log <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(maizC2))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$maizC2), na.rm = TRUE), 
               slope = sd(log(datosRindeMaiz@data$maizC2), na.rm = TRUE), col = "red") + 
-  labs(title = "Log Rend.maíz C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Rend.maíz C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC2Sqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(maizC2))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$maizC2), na.rm = TRUE), 
               slope = sd(sqrt(datosRindeMaiz@data$maizC2), na.rm = TRUE), col = "red") +
-  labs(title = "Raíz cuadrada Rend.maíz C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Rend.maíz C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC2BC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = maizC2BC)) +
   geom_abline(intercept = mean(maizC2BC, na.rm = TRUE), 
               slope = sd(maizC2BC, na.rm = TRUE), col = "red") +
-  labs(title = "Box-Cox Rend.maíz C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Rend.maíz C2", x = "Cuantiles teóricos",
+       y = "Cuantiles de la muestra")
 
 # Q-Q plot profundidad de la napa (C1)
 ggQQNapaDicC1 <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = NapaDicC1)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$NapaDicC1), 
               slope = sd(datosRindeMaiz@data$NapaDicC1), col = "red") +
-  labs(title = "Prof.napa C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Prof.napa C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC1Log <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(NapaDicC1))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$NapaDicC1)), 
               slope = sd(log(datosRindeMaiz@data$NapaDicC1)), col = "red") + 
-  labs(title = "Log Prof.napa C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Prof.napa C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC1Sqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(NapaDicC1))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$NapaDicC1)), 
               slope = sd(sqrt(datosRindeMaiz@data$NapaDicC1)), col = "red") +
-  labs(title = "Raíz cuadrada Prof.napa C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Prof.napa C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC1BC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = NapaDicC1BC)) +
   geom_abline(intercept = mean(NapaDicC1BC, na.rm = TRUE), 
               slope = sd(NapaDicC1BC, na.rm = TRUE), col = "red") +
-  labs(title = "Box-Cox Prof.napa C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Prof.napa C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 # Q-Q plot profundidad de la napa (C2)
 ggQQNapaDicC2 <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = NapaDicC2)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$NapaDicC2), 
               slope = sd(datosRindeMaiz@data$NapaDicC2), col = "red") +
-  labs(title = "Prof.napa C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Prof.napa C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC2Log <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(NapaDicC2))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$NapaDicC2)), 
               slope = sd(log(datosRindeMaiz@data$NapaDicC2)), col = "red") + 
-  labs(title = "Log Prof.napa C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Prof.napa C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC2Sqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(NapaDicC2))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$NapaDicC2)), 
               slope = sd(sqrt(datosRindeMaiz@data$NapaDicC2)), col = "red") +
-  labs(title = "Raíz cuadrada Prof.napa C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Prof.napa C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC2BC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = NapaDicC2BC)) +
   geom_abline(intercept = mean(NapaDicC2BC, na.rm = TRUE), 
               slope = sd(NapaDicC2BC, na.rm = TRUE), col = "red") +
-  labs(title = "Box-Cox Prof.napa C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Prof.napa C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 # Q-Q plot elevación
 ggQQElev <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = Elev)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$Elev), 
               slope = sd(datosRindeMaiz@data$Elev), col = "red") +
-  labs(title = "Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Elevación", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQElevLog <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(Elev))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$Elev)), 
               slope = sd(log(datosRindeMaiz@data$Elev)), col = "red") + 
-  labs(title = "Log Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Elevación", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQElevSqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(Elev))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$Elev)), 
               slope = sd(sqrt(datosRindeMaiz@data$Elev)), col = "red") +
-  labs(title = "Raíz cuadrada Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Elevación", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQElevBC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = ElevBC)) +
   geom_abline(intercept = mean(ElevBC), slope = sd(ElevBC), col = "red") +
-  labs(title = "Box-Cox Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Elevación", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 # Ver plots 
 grid.arrange(ggQQmaizC1, ggQQmaizC2, ggQQNapaDicC1, ggQQNapaDicC2, ggQQElev,
-             ggQQmaizC1Log, ggQQmaizC2Log, ggQQNapaDicC1Log, ggQQNapaDicC2Log, ggQQElevLog,
-             ggQQmaizC1Sqrt, ggQQmaizC2Sqrt, ggQQNapaDicC1Sqrt, ggQQNapaDicC2Sqrt, ggQQElevSqrt,
-             ggQQmaizC1BC, ggQQmaizC2BC, ggQQNapaDicC1BC, ggQQNapaDicC2BC, ggQQElevBC,
+             ggQQmaizC1Log, ggQQmaizC2Log, ggQQNapaDicC1Log, ggQQNapaDicC2Log, 
+             ggQQElevLog, ggQQmaizC1Sqrt, ggQQmaizC2Sqrt, ggQQNapaDicC1Sqrt, 
+             ggQQNapaDicC2Sqrt, ggQQElevSqrt,ggQQmaizC1BC, ggQQmaizC2BC, 
+             ggQQNapaDicC1BC, ggQQNapaDicC2BC, ggQQElevBC,
              ncol = 4, nrow = 5, 
              layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
              )
@@ -669,23 +693,27 @@ ggTend_MaizC2VsLat <- ggDatosRindeMaiz +
 ggTend_MaizC1VsElev <- ggDatosRindeMaiz +
   geom_point(aes(y = maizC1, x = Elev)) + 
   geom_smooth(aes(y = maizC1, x = Elev)) + 
-  labs(title = "", y = "Rendimiento maíz C1 (t/ha)", x = "Elevación (m)")
+  labs(title = "", y = "Rendimiento maíz C1 (t/ha)", 
+       x = "Elevación (m)")
 
 ggTend_MaizC2VsElev <- ggDatosRindeMaiz +
   geom_point(aes(y = maizC2, x = Elev)) + 
   geom_smooth(aes(y = maizC2, x = Elev)) + 
-  labs(title = "", y = "Rendimiento maíz C2 (t/ha)", x = "Elevación (m)")
+  labs(title = "", y = "Rendimiento maíz C2 (t/ha)", 
+       x = "Elevación (m)")
 
 # Rendimiento maíz vs Profundidad de la napa
 ggTend_MaizC1VsNapaDicC1 <- ggDatosRindeMaiz +
   geom_point(aes(y = maizC1, x = NapaDicC1)) + 
   geom_smooth(aes(y = maizC1, x = NapaDicC1)) + 
-  labs(title = "", y = "Rendimiento maíz C1 (t/ha)", x = "Profundidad napa (m)")
+  labs(title = "", y = "Rendimiento maíz C1 (t/ha)", 
+       x = "Profundidad napa (m)")
 
 ggTend_MaizC2VsNapaDicC2 <- ggDatosRindeMaiz +
   geom_point(aes(y = maizC2, x = NapaDicC2)) + 
   geom_smooth(aes(y = maizC2, x = NapaDicC2)) + 
-  labs(title = "", y = "Rendimiento maíz C2 (t/ha)", x = "Profundidad napa (m)")
+  labs(title = "", y = "Rendimiento maíz C2 (t/ha)", 
+       x = "Profundidad napa (m)")
 
 # Profundidad de la napa vs Elevación
 ggTend_NapaDicC1VsElev <- ggDatosRindeMaiz +
@@ -700,8 +728,10 @@ ggTend_NapaDicC2VsElev <- ggDatosRindeMaiz +
 
 # Ver plots
 
-grid.arrange(ggTend_MaizC1VsLong, ggTend_MaizC1VsLat, ggTend_MaizC1VsElev, ggTend_MaizC1VsNapaDicC1,
-             ggTend_MaizC2VsLong, ggTend_MaizC2VsLat, ggTend_MaizC2VsElev, ggTend_MaizC2VsNapaDicC2,
+grid.arrange(ggTend_MaizC1VsLong, ggTend_MaizC1VsLat, 
+             ggTend_MaizC1VsElev, ggTend_MaizC1VsNapaDicC1,
+             ggTend_MaizC2VsLong, ggTend_MaizC2VsLat, 
+             ggTend_MaizC2VsElev, ggTend_MaizC2VsNapaDicC2,
              ggTend_NapaDicC1VsElev, ggTend_NapaDicC2VsElev,
              ncol = 4, nrow = 3,
              layout_matrix = rbind(c(1,2,3,4), c(5,6,7,8), c(NA,9,10,NA))
@@ -720,34 +750,54 @@ Se calculó el coeficiente de correlación de Pearson ($r$) para cuantificar la 
 NAs <- is.na(datosRindeMaiz@data$maizC1)
 
 # Rendimiento maíz vs Longitud para C1
-cor.test(x = datosRindeMaiz@coords[!NAs,"Long"], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+cor.test(x = datosRindeMaiz@coords[!NAs,"Long"], 
+         y = datosRindeMaiz@data$maizC1[!NAs], 
+         method = "pearson")
 # Rendimiento maíz vs Longitud para C2
-cor.test(x = datosRindeMaiz@coords[,"Long"], y = datosRindeMaiz@data$maizC2, method = "pearson")
+cor.test(x = datosRindeMaiz@coords[,"Long"], 
+         y = datosRindeMaiz@data$maizC2, 
+         method = "pearson")
 
 # Rendimiento maíz vs Latitud para C1
-cor.test(x = datosRindeMaiz@coords[!NAs,"Lat"], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+cor.test(x = datosRindeMaiz@coords[!NAs,"Lat"], 
+         y = datosRindeMaiz@data$maizC1[!NAs], 
+         method = "pearson")
 # Rendimiento maíz vs Latitud para C2
-cor.test(x = datosRindeMaiz@coords[,"Lat"], y = datosRindeMaiz@data$maizC2, method = "pearson")
+cor.test(x = datosRindeMaiz@coords[,"Lat"], 
+         y = datosRindeMaiz@data$maizC2, 
+         method = "pearson")
 
 # Rendimiento maíz vs Elevación para C1
-cor.test(x = datosRindeMaiz@data$Elev[!NAs], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+cor.test(x = datosRindeMaiz@data$Elev[!NAs], 
+         y = datosRindeMaiz@data$maizC1[!NAs], 
+         method = "pearson")
 # Rendimiento maíz vs Elevación para C2
-cor.test(x = datosRindeMaiz@data$Elev, y = datosRindeMaiz@data$maizC2, method = "pearson")
+cor.test(x = datosRindeMaiz@data$Elev, 
+         y = datosRindeMaiz@data$maizC2, 
+         method = "pearson")
 
 # Rendimiento maíz vs Profundidad de la napa para C1
-cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$maizC1[!NAs], method = "pearson")
+cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], 
+         y = datosRindeMaiz@data$maizC1[!NAs], 
+         method = "pearson")
 # Rendimiento maíz vs Profundidad de la napa para C2
-cor.test(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$maizC2, method = "pearson")
+cor.test(x = datosRindeMaiz@data$NapaDicC2, 
+         y = datosRindeMaiz@data$maizC2, 
+         method = "pearson")
 
 # Profundidad de la napa vs Elevación para C1
-cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], y = datosRindeMaiz@data$Elev[!NAs], method = "pearson")
+cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], 
+         y = datosRindeMaiz@data$Elev[!NAs], 
+         method = "pearson")
 # Profundidad de la napa vs Elevación para C2
-cor.test(x = datosRindeMaiz@data$NapaDicC2, y = datosRindeMaiz@data$Elev, method = "pearson")
+cor.test(x = datosRindeMaiz@data$NapaDicC2, 
+         y = datosRindeMaiz@data$Elev, 
+         method = "pearson")
 
 ```
 En los siguientes correlogramas las celdas de colores azules y con un patrón de relleno de líneas con una pendiente positiva representan correlaciones positivas y las celdas de colores rojos  con un patrón de relleno de líneas con una pendiente negativa representan correlaciones negativas. La intensidad del color es proporcional a la magnitud del coeficiente de correlación de Pearson.
 
-```{r}
+```{r, fig.height=4, fig.width=4, message=FALSE, warning=FALSE}
 
 # Correlograma C1
 corrgram(data.frame("Rend.maíz" = datosRindeMaiz@data$maizC1,
@@ -780,7 +830,88 @@ corrgram(data.frame("Rend.maíz" = datosRindeMaiz@data$maizC2,
 
 Se observó que la correlación entre el rendimiento de maíz con la latitud y la longitud fueron bajas ($0 < r < 0.35$), confirmando una tendencia despreciable. Por otro lado, se observó que la correlación fue alta para el rendimiento de maíz con la Elevación ($r_{C1} = -0.56$ y $r_{C2} = -0.73$) y aún fue mayor para la Profundidad de la napa ($r_{C1} = -0.86$ y $r_{C2} = -0.84$). Se confirmó que existe una tendencia negativa entre el rendimiento de maíz y la elevación y entre el rendimiento de maíz y la profundidad de la napa. También se observó que existe una correlación positiva entre la profundidad de la napa y la elevación ($r_{C1} = 0.67$ y $r_{C2} = 0.74$)
 
-## Índices de autocorrelación
+## Autocorrelación espacial
+
+Para examinar patrones de autocorrelación espacial se realizaron correlogramas espaciales basados en el índice de Moran ($I$).
+
+```{r}
+
+# Índice de Moran para el rendimiento de maíz - C1
+moranRendMaizC1 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
+                            y = as.data.frame(datosRindeMaiz@coords)$Lat, 
+                            z = datosRindeMaiz$maizC1, 
+                            increment = 100, 
+                            resamp = 0, 
+                            latlon = FALSE, 
+                            na.rm = TRUE)
+
+# Índice de Moran para el rendimiento de maíz - C2
+moranRendMaizC2 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
+                            y = as.data.frame(datosRindeMaiz@coords)$Lat, 
+                            z = datosRindeMaiz$maizC2, 
+                            increment = 100, 
+                            resamp = 0, 
+                            latlon = FALSE, 
+                            na.rm = TRUE)
+```
+
+```{r, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+# Plot correlograma 
+
+# Poligonos de tipos de correlación
+polyAutocorrPos <- data.frame("id" = rep("1", length(moranRendMaizC2$mean.of.class)/2),
+                              "x" = c(seq(0, max(moranRendMaizC2$mean.of.class),
+                                        length.out = length(moranRendMaizC2$mean.of.class)/2),
+                                        rev(seq(0, max(moranRendMaizC2$mean.of.class),
+                                                length.out = length(moranRendMaizC2$mean.of.class)/2))),
+                              "y" = c(rep(0,7), rep(1,7)))
+
+polyAutocorrNeg <- data.frame("id" = rep("2", length(moranRendMaizC2$mean.of.class)/2),
+                              "x" = c(seq(0, max(moranRendMaizC2$mean.of.class),
+                                        length.out = length(moranRendMaizC2$mean.of.class)/2),
+                                        rev(seq(0, max(moranRendMaizC2$mean.of.class),
+                                                length.out = length(moranRendMaizC2$mean.of.class)/2))),
+                              "y" = c(rep(0,7), rep(-0.2,7)))
+
+# Índice de Moran para el rendimiento de maíz - C1
+ggMoranRendMaizC1 <- ggplot(data.frame("intervalos" = moranRendMaizC1$mean.of.class,
+                                       "correlación" = moranRendMaizC1$correlation)) +
+  geom_polygon(aes(x = polyAutocorrPos$x, y = polyAutocorrPos$y, group = polyAutocorrPos$id), 
+                   fill = "darkblue", alpha = 0.6) + 
+  geom_polygon(aes(x = polyAutocorrNeg$x, y = polyAutocorrNeg$y, group = polyAutocorrNeg$id), 
+                   fill = "darkred", alpha = 0.6) + 
+  geom_point(aes(x = intervalos, y = correlación), size = 3) +
+  geom_line(aes(x = intervalos, y = correlación)) + 
+  labs(title = "Índice de Moran - C1", 
+       x = "Intervalos de distancia", 
+       y = "Correlación espacial") + 
+  scale_x_continuous(limits = c(0, max(moranRendMaizC1$mean.of.class)), 
+                     breaks = seq(0, max(moranRendMaizC1$mean.of.class), 100)) +
+  scale_y_continuous(limits = c(-0.2, 1), breaks = seq(-0.2, 1, 0.2))
+
+# Plot correlograma 
+# Índice de Moran para el rendimiento de maíz - C2
+ggMoranRendMaizC2 <- ggplot(data.frame("intervalos" = moranRendMaizC2$mean.of.class,
+                                       "correlación" = moranRendMaizC2$correlation)) +
+  geom_polygon(aes(x = polyAutocorrPos$x, y = polyAutocorrPos$y, group = polyAutocorrPos$id), 
+                   fill = "darkblue", alpha = 0.6) + 
+  geom_polygon(aes(x = polyAutocorrNeg$x, y = polyAutocorrNeg$y, group = polyAutocorrNeg$id), 
+                   fill = "darkred", alpha = 0.6) + 
+  geom_point(aes(x = intervalos, y = correlación), size = 3) +
+  geom_line(aes(x = intervalos, y = correlación)) + 
+  labs(title = "Índice de Moran - C2", 
+       x = "Intervalos de distancia", 
+       y = "Correlación espacial") + 
+  scale_x_continuous(limits = c(0, max(moranRendMaizC2$mean.of.class)), 
+                     breaks = seq(0, max(moranRendMaizC2$mean.of.class), 100)) +
+  scale_y_continuous(limits = c(-0.2, 1), breaks = seq(-0.2, 1, 0.2))
+
+# Ver plot 
+grid.arrange(ggMoranRendMaizC1, ggMoranRendMaizC2,
+             ncol = 2, nrow = 1, 
+             layout_matrix = cbind(1,2)
+             )
+```
 
 ## Supuestos distribucionales
 
