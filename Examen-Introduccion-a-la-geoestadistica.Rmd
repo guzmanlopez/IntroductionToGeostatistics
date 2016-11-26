@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
+  pdf_document:
+    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
-    toc: yes
-  pdf_document:
     toc: yes
 ---
 
@@ -53,6 +53,12 @@ library('forecast')
 
 # Autocorrelaciones - Indices de Moran y Geary
 library('ncf')
+
+# Akaike
+library('MASS')
+
+# Importancia relativa predictores
+library('relaimpo')
 
 # Gráficos
 
@@ -830,11 +836,66 @@ corrgram(data.frame("Rend.maíz" = datosRindeMaiz@data$maizC2,
 
 Se observó que la correlación entre el rendimiento de maíz con la latitud y la longitud fueron bajas ($0 < r < 0.35$), confirmando una tendencia despreciable. Por otro lado, se observó que la correlación fue alta para el rendimiento de maíz con la Elevación ($r_{C1} = -0.56$ y $r_{C2} = -0.73$) y aún fue mayor para la Profundidad de la napa ($r_{C1} = -0.86$ y $r_{C2} = -0.84$). Se confirmó que existe una tendencia negativa entre el rendimiento de maíz y la elevación y entre el rendimiento de maíz y la profundidad de la napa. También se observó que existe una correlación positiva entre la profundidad de la napa y la elevación ($r_{C1} = 0.67$ y $r_{C2} = 0.74$)
 
-## Autocorrelación espacial
+Para definir el modelo de tendencia del rendimiento de maíz, se evaluaron tres modelos de regresiones lineales: 
 
-Para examinar patrones de autocorrelación espacial se realizaron correlogramas espaciales basados en el índice de Moran ($I$).
+1. Modelo de tendencia basado en una regresión lineal múltiple del rendimiento de maíz con la profundidad de la napa y la elevación.
+2. Modelo de tendencia basado en una regresión lineal simple del rendimiento de maíz con la profundidad de la napa.
+3. Modelo de tendencia basado en una regresión lineal simple del rendimiento de maíz con la elevación.
+
+Se utilizó el criterio de información de Akaike ($AIC$) para definir el modelo (a menor $AIC$ mejor ajuste).
 
 ```{r}
+
+# Ajuste de moelos para C1
+ajusteC1.M1 <- lm(formula = maizC1 ~ NapaDicC1 + Elev, data = datosRindeMaiz)
+ajusteC1.M2 <- lm(formula = maizC1 ~ NapaDicC1, data = datosRindeMaiz)
+ajusteC1.M3 <- lm(formula = maizC1 ~ Elev, data = datosRindeMaiz)
+
+# Criterio de Información de Akaike
+AIC(ajusteC1.M1, ajusteC1.M2, ajusteC1.M3)
+
+# Ajuste de moelos para C2
+ajusteC2.M1 <- lm(formula = maizC2 ~ NapaDicC2 + Elev, data = datosRindeMaiz)
+ajusteC2.M2 <- lm(formula = maizC2 ~ NapaDicC2, data = datosRindeMaiz)
+ajusteC2.M3 <- lm(formula = maizC2 ~ Elev, data = datosRindeMaiz)
+
+# Criterio de Información de Akaike
+AIC(ajusteC2.M1, ajusteC2.M2, ajusteC2.M3)
+
+```
+
+El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($M1$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
+
+```{r, fig.height=8, fig.width=8}
+
+# Calcular la importancia relativa para cada predictor - C1
+impRel.C1.M1 <- calc.relimp(ajusteC1.M1, 
+                            type = c("lmg", "last", "first", "pratt"),
+                            rela = TRUE)
+# Resumen
+(impRel.C1.M1)
+
+# Gráfico
+plot(impRel.C1.M1)
+
+# Calcular la importancia relativa para cada predictor - C2
+impRel.C2.M1 <- calc.relimp(ajusteC2.M1, 
+                            type = c("lmg", "last", "first", "pratt"),
+                            rela = TRUE)
+# Resumen
+(impRel.C2.M1 )
+
+# Gráfico
+plot(impRel.C2.M1)
+
+```
+La varianza explicada por el modelo elegido fue de $73.91%$ y de $72.96%$ para C1 y para C2 respectivamente. Se observó que la profundidad de la napa tuvo una importancia relativa mayor en el modelo de tendencia elegido que la elevación. Además, dicha observación fue más acentuada para la C1 que para la C2.  
+
+## Autocorrelación espacial
+
+Para examinar patrones de autocorrelación espacial se realizaron correlogramas espaciales basados en el índice de Moran ($I$) para el rendimiento de maíz. El color azul muestra autocorrelación espacial positiva mientras que el color rojo muestra autocorrelación espacial negativa.
+
+```{r, message=FALSE, warning=FALSE}
 
 # Índice de Moran para el rendimiento de maíz - C1
 moranRendMaizC1 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
@@ -853,6 +914,8 @@ moranRendMaizC2 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long,
                             resamp = 0, 
                             latlon = FALSE, 
                             na.rm = TRUE)
+
+
 ```
 
 ```{r, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
