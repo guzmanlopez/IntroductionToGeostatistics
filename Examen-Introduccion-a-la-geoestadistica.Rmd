@@ -1014,11 +1014,39 @@ medidasInfC2$infmat[-which(medidasInfC2$is.inf),]
 
 localmoran(x = datosRindeMaiz$maizC2, listw = nb2listw(nbc2))
 
-nbc1
+m <- localG(x = datosRindeMaiz$maizC2, listw = nb2listw(nbc2))
+
+image(datosRindeMaiz@coords[,"Long"], 
+      datosRindeMaiz@coords[,"Lat"], 
+      t(matrix(m, nrow=6, ncol=2310, byrow=TRUE)), asp = 1)
 
 
-GeoXp::neighbourmap(sp.obj = datosRindeMaiz, name.var = "maizC2", nb.obj = nbc2, identify = TRUE)
 
+# Create a spatial weights matrix (Wij) using a distance bandwidth.
+nb <- dnearneigh(x = datosRindeMaiz, d1 = 0, d2 = 500)
+
+# Calculate the local Moran’s-I (LISA)
+mI <- localmoran(datosRindeMaiz@data$maizC2, nb2listw(nb, style="B"))
+
+# Create a new sp point object from meuse that hold the local Moran’s-I results.
+LocalI <- datosRindeMaiz
+LocalI@data <- data.frame(ID = rownames(LocalI@data), as.data.frame(mI))
+names(LocalI@data)[6] <- "Pr"
+
+# Return the number of observations that are significant at p=0.05
+dim( LocalI[LocalI@data[,"Pr"] < 0.05 ,] )
+
+# Plot the frequency of the p-values
+hist(LocalI@data[,"Pr"], col="blue", xlab="p-value")
+
+# Plot the critical values (z) using spplot
+spplot(LocalI, "Z.Ii", xlab="Local Morans-I", col.regions = brewer.pal(n = 11, "Spectral"))
+
+# The high and low have no distinct I values so one must create a vector to distinguish significant and high hotspots. Red represents hot spots. This is a spatial points object that can be written out as a shape file or ASCII flat file with associated coordinates.
+LocalI@data <- data.frame(LocalI@data, 
+                          HotSpots = ifelse( mI[,5] <= 0.05 & mI[,4] >= mean(mI[,4]), 1, 0))
+LocalI@data$HotSpots <- as.factor(LocalI@data$HotSpots)
+spplot(LocalI, "HotSpots", xlab = "Local Moran’s-I Hot Spots", col.regions = c("blue","red") )
 
 ```
 
