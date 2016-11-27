@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -53,6 +53,9 @@ library('forecast')
 
 # Autocorrelaciones - Indices de Moran y Geary
 library('ncf')
+
+# Dependencia espacial
+library('spdep')
 
 # Akaike
 library('MASS')
@@ -976,20 +979,64 @@ grid.arrange(ggMoranRendMaizC1, ggMoranRendMaizC2,
              )
 ```
 
-## Supuestos distribucionales
-
 ## Cambios en la media dentro del lote
 
 Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") del rendimiento de maíz y las covariables ambientales.
+
+```{r}
+
+nbc1 <- tri2nb(datosRindeMaiz[-which(is.na(datosRindeMaiz$maizC1)),]@coords)
+plot.nb(x = nbc1, coords = datosRindeMaiz[-which(is.na(datosRindeMaiz$maizC1)),]@coords)
+
+moran.plot(x = datosRindeMaiz[-which(is.na(datosRindeMaiz$maizC1)),]$maizC1, 
+           listw = nb2listw(nbc1), 
+           pch = 19, 
+           cex = 0.25, 
+           ylab = "Valores espacialmente retrasados",
+           xlab = "Rendimiento de maíz (t/ha)",
+           main = "C1")
+
+nbc2 <- tri2nb(datosRindeMaiz@coords)
+plot.nb(x = nbc2, coords = datosRindeMaiz@coords)
+
+medidasInfC2 <- moran.plot(x = datosRindeMaiz$maizC2, 
+                           labels = TRUE,
+                           quiet = FALSE,
+                           listw = nb2listw(nbc2), 
+                           pch = 19, 
+                           cex = 0.25, 
+                           ylab = "Valores espacialmente retrasados",
+                           xlab = "Rendimiento de maíz (t/ha)", 
+                           main = "C2")
+
+medidasInfC2$infmat[-which(medidasInfC2$is.inf),]
+
+
+localmoran(x = datosRindeMaiz$maizC2, listw = nb2listw(nbc2))
+
+nbc1
+
+
+GeoXp::neighbourmap(sp.obj = datosRindeMaiz, name.var = "maizC2", nb.obj = nbc2, identify = TRUE)
+
+
+```
+
 
 ```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
 # Mapa de puntos de rendimiento de maíz para el lote
 spplot(obj = datosRindeMaiz, zcol = c("maizC1", "maizC2"), main = "Rendimiento de maíz (t/ha)")
 
+```
+
+```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 # Mapa de puntos de la profundidad de la napa para el lote
 spplot(obj = datosRindeMaiz, zcol = c("NapaDicC1", "NapaDicC2"), main = "Profundidad napa (m)")
 
+```
+
+```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 # Mapa de puntos de la elevación del lote
 spplot(obj = datosRindeMaiz, zcol = "Elev", main = "Elevación (m)")
 

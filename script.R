@@ -21,6 +21,18 @@ library('reshape2')
 # Transformaciones Box-Cox
 library('forecast')
 
+# Autocorrelaciones - Indices de Moran y Geary
+library('ncf')
+
+# Dependencia espacial
+library('spdep')
+
+# Akaike
+library('MASS')
+
+# Importancia relativa predictores
+library('relaimpo')
+
 # Gráficos
 
 # Versión dev de ggplot2, requiere:
@@ -29,9 +41,11 @@ library('forecast')
 library('ggplot2')
 library('ggplot2')
 library('gridExtra')
+library('corrgram') # correlogramas
 
 # Escalas de colores
 library('RColorBrewer')
+
 
 # Cargar datos ------------------------------------------------------------
 
