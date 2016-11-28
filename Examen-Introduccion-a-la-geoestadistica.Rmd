@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
+  pdf_document:
+    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
-    toc: yes
-  pdf_document:
     toc: yes
 ---
 
@@ -998,26 +998,28 @@ grid.arrange(ggMoranRendMaizC1, ggMoranRendMaizC2,
              )
 ```
 
-## Detección de outliers
+## Identificación de valores atípicos espaciales
 
+Para detectar valores atípicos espaciales se analizó el gráfico de dispersión de Moran que permite evaluar que tan similar es un valor observado respecto a las observaciones de sus vecinos en el espacio. Los puntos en los cuadrantes superior derecho e inferior izquierdo indican una asociación espacial positiva de valores que son más altos y más bajos que la media muestral respectivamente. Los puntos de los cuadrantes inferior derecho y superior izquierdo incluyen observaciones que indican una asociación espacial negativa, es decir, poseen poca similitud con sus vecinos.
 
+```{r, warning=FALSE}
 
-## Cambios en la media
-
-Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") del rendimiento de maíz y las covariables ambientales. Además, 
-
-```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
-
-# Convertir SpatialPointsDataFrame a SpatialPixels para estimar
-# el número de filas y columnas de la grilla de puntos
-# y así crear una matriz espacial ponderada
+# Convertir el objeto SpatialPointsDataFrame a SpatialPixels para estimar
+# el número de filas y columnas de la grilla de puntos y así crear una 
+# matriz espacial de vecinos ponderada
 
 nb <- cell2nb(nrow = SpatialPixels(datosRindeMaiz, tolerance = 0.00503112)@grid@cells.dim["Lat"], 
               ncol = SpatialPixels(datosRindeMaiz, tolerance = 0.00503112)@grid@cells.dim["Long"], 
               type = "rook", torus = TRUE)
 
+(nb)
+
 # Plotear matriz espacial de vecinos
-plot.nb(x = nb, coords = datosRindeMaiz@coords, col="red")
+plot.nb(x = nb, coords = datosRindeMaiz@coords, col = "red")
+
+```
+
+```{r, fig.height=7, fig.width=8, message=FALSE, warning=FALSE}
 
 # Plot de dispersión de Moran
 moranPlotC1 <- moran.plot(x = datosRindeMaiz$ajusteC1.M1, 
@@ -1030,6 +1032,10 @@ moranPlotC1 <- moran.plot(x = datosRindeMaiz$ajusteC1.M1,
                           xlab = "Rendimiento de maíz (t/ha)",
                           main = "C1")
 
+```
+
+```{r, fig.height=7, fig.width=8, message=FALSE, warning=FALSE}
+
 moranPlotC2 <- moran.plot(x = datosRindeMaiz$ajusteC2.M1, 
                           listw = nb2listw(nb), 
                           labels = as.character(1:nrow(datosRindeMaiz)),
@@ -1038,26 +1044,41 @@ moranPlotC2 <- moran.plot(x = datosRindeMaiz$ajusteC2.M1,
                           col = "darkred",
                           ylab = "Valores espacialmente retrasados",
                           xlab = "Rendimiento de maíz (t/ha)",
-                          main = "C1")
+                          main = "C2")
 
-# Puntos influyentes
-summary(moranPlotC1)
-summary(moranPlotC2)
+```
+
+```{r, message=FALSE, warning=FALSE}
 
 # Filas de puntos influyentes
 ptosInfC1 <- as.numeric(rownames(summary(moranPlotC1)))
 ptosInfC2 <- as.numeric(rownames(summary(moranPlotC2)))
 
+```
+
+```{r, fig.height=6, fig.width=10, message=FALSE, warning=FALSE}
+
 # Histograma de distancias de Cook
+
+par(mfrow= c(1,2))
+
 hist(moranPlotC1$infmat[ptosInfC1,"cook.d"], seq(0, 0.1, 0.0025), 
      col = "black", border = "white", 
-     xlab = "Distancia de Cook", ylab = "Frecuencia", 
+     xlab = "Distancias de Cook", ylab = "Frecuencia", 
      main = "C1", xlim = c(0, 0.08))
 
-hist(moranPlotC2$infmat[ptosInfC2,"cook.d"], seq(0, 0.1, 0.0025), 
+histCookDistC2 <- hist(moranPlotC2$infmat[ptosInfC2,"cook.d"], seq(0, 0.1, 0.0025), 
      col = "black", border = "white", 
-     xlab = "Distancia de Cook", ylab = "Frecuencia", 
+     xlab = "Distancias de Cook", ylab = "Frecuencia", 
      main = "C2", xlim = c(0, 0.08))
+
+par(mfrow=c(1,1))
+
+```
+
+
+
+```{r, message=FALSE, warning=FALSE}
 
 umbralCook <- 4/nrow(datosRindeMaiz)
 
@@ -1065,24 +1086,27 @@ umbralCook <- 4/nrow(datosRindeMaiz)
 outliersC1 <- as.numeric(names(which(moranPlotC1$infmat[ptosInfC1,"cook.d"] > umbralCook)))
 outliersC2 <- as.numeric(names(which(moranPlotC2$infmat[ptosInfC2,"cook.d"] > umbralCook)))
 
+```
+
+```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
+
 # Plot C1
 spplot(datosRindeMaiz, zcol = "ajusteC1.M1", colorkey = TRUE)
 spplot(datosRindeMaiz[-c(outliersC1),], zcol = "ajusteC1.M1", colorkey = TRUE)
+
+```
+
+```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 
 # Plot C2
 spplot(datosRindeMaiz, zcol = "ajusteC2.M1", colorkey = TRUE)
 spplot(datosRindeMaiz[-c(outliersC2),], zcol = "ajusteC1.M1", colorkey = TRUE)
 
-
 ```
 
+## Cambios en la media
 
-```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
-
-# Mapa de puntos de rendimiento de maíz para el lote
-spplot(obj = datosRindeMaiz, zcol = c("ajusteC1.M1", "ajusteC2.M1"), main = "Rendimiento de maíz (t/ha)")
-
-```
+Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") de los datos originales de rendimiento de maíz y las covariables ambientales.
 
 ```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
@@ -1112,6 +1136,8 @@ spplot(obj = datosRindeMaiz, zcol = "Elev", main = "Elevación (m)")
 ## Variograma empírico
 
 ```{r}
+
+
 
 ```
 
