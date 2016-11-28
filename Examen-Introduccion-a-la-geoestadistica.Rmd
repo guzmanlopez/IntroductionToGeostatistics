@@ -867,7 +867,7 @@ AIC(ajusteC2.M1, ajusteC2.M2, ajusteC2.M3)
 
 ```
 
-El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($M1$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
+El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($y = \beta_{1}x_{1} + \beta_{2}x_{1} + \beta_{0}$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
 
 ```{r, fig.height=8, fig.width=8}
 
@@ -892,7 +892,27 @@ impRel.C2.M1 <- calc.relimp(ajusteC2.M1,
 plot(impRel.C2.M1)
 
 ```
+
 La varianza explicada por el modelo elegido fue de $73.91%$ y de $72.96%$ para C1 y para C2 respectivamente. Se observó que la profundidad de la napa tuvo una importancia relativa mayor en el modelo de tendencia elegido que la elevación. Además, dicha observación fue más acentuada para la C1 que para la C2.  
+
+
+```{r}
+
+# Agregar modelo de tendencia a los datos
+
+# C1
+datosRindeMaiz$ajusteC1.M1 <- 
+  ajusteC1.M1$coefficients["NapaDicC1"] * datosRindeMaiz$NapaDicC1 +
+  ajusteC1.M1$coefficients["Elev"] * datosRindeMaiz$Elev +
+  ajusteC1.M1$coefficients["(Intercept)"]
+  
+# C2
+datosRindeMaiz$ajusteC2.M1 <- 
+  ajusteC2.M1$coefficients["NapaDicC2"] * datosRindeMaiz$NapaDicC2 +
+  ajusteC2.M1$coefficients["Elev"] * datosRindeMaiz$Elev +
+  ajusteC2.M1$coefficients["(Intercept)"]
+
+```
 
 ## Autocorrelación espacial
 
@@ -903,7 +923,7 @@ Para examinar patrones de autocorrelación espacial se realizaron correlogramas 
 # Índice de Moran para el rendimiento de maíz - C1
 moranRendMaizC1 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
                             y = as.data.frame(datosRindeMaiz@coords)$Lat, 
-                            z = datosRindeMaiz$maizC1, 
+                            z = datosRindeMaiz$ajusteC1.M1, 
                             increment = 100, 
                             resamp = 0, 
                             latlon = FALSE, 
@@ -912,12 +932,11 @@ moranRendMaizC1 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long,
 # Índice de Moran para el rendimiento de maíz - C2
 moranRendMaizC2 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
                             y = as.data.frame(datosRindeMaiz@coords)$Lat, 
-                            z = datosRindeMaiz$maizC2, 
+                            z = datosRindeMaiz$ajusteC2.M1, 
                             increment = 100, 
                             resamp = 0, 
                             latlon = FALSE, 
                             na.rm = TRUE)
-
 
 ```
 
@@ -979,77 +998,91 @@ grid.arrange(ggMoranRendMaizC1, ggMoranRendMaizC2,
              )
 ```
 
-## Cambios en la media dentro del lote
-
-Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") del rendimiento de maíz y las covariables ambientales.
-
-```{r}
-
-nbc1 <- tri2nb(datosRindeMaiz[-which(is.na(datosRindeMaiz$maizC1)),]@coords)
-plot.nb(x = nbc1, coords = datosRindeMaiz[-which(is.na(datosRindeMaiz$maizC1)),]@coords)
-
-moran.plot(x = datosRindeMaiz[-which(is.na(datosRindeMaiz$maizC1)),]$maizC1, 
-           listw = nb2listw(nbc1), 
-           pch = 19, 
-           cex = 0.25, 
-           ylab = "Valores espacialmente retrasados",
-           xlab = "Rendimiento de maíz (t/ha)",
-           main = "C1")
-
-nbc2 <- tri2nb(datosRindeMaiz@coords)
-plot.nb(x = nbc2, coords = datosRindeMaiz@coords)
-
-medidasInfC2 <- moran.plot(x = datosRindeMaiz$maizC2, 
-                           labels = TRUE,
-                           quiet = FALSE,
-                           listw = nb2listw(nbc2), 
-                           pch = 19, 
-                           cex = 0.25, 
-                           ylab = "Valores espacialmente retrasados",
-                           xlab = "Rendimiento de maíz (t/ha)", 
-                           main = "C2")
-
-medidasInfC2$infmat[-which(medidasInfC2$is.inf),]
-
-
-localmoran(x = datosRindeMaiz$maizC2, listw = nb2listw(nbc2))
-
-m <- localG(x = datosRindeMaiz$maizC2, listw = nb2listw(nbc2))
-
-image(datosRindeMaiz@coords[,"Long"], 
-      datosRindeMaiz@coords[,"Lat"], 
-      t(matrix(m, nrow=6, ncol=2310, byrow=TRUE)), asp = 1)
+## Detección de outliers
 
 
 
-# Create a spatial weights matrix (Wij) using a distance bandwidth.
-nb <- dnearneigh(x = datosRindeMaiz, d1 = 0, d2 = 500)
+## Cambios en la media
 
-# Calculate the local Moran’s-I (LISA)
-mI <- localmoran(datosRindeMaiz@data$maizC2, nb2listw(nb, style="B"))
+Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") del rendimiento de maíz y las covariables ambientales. Además, 
 
-# Create a new sp point object from meuse that hold the local Moran’s-I results.
-LocalI <- datosRindeMaiz
-LocalI@data <- data.frame(ID = rownames(LocalI@data), as.data.frame(mI))
-names(LocalI@data)[6] <- "Pr"
+```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
-# Return the number of observations that are significant at p=0.05
-dim( LocalI[LocalI@data[,"Pr"] < 0.05 ,] )
+# Convertir SpatialPointsDataFrame a SpatialPixels para estimar
+# el número de filas y columnas de la grilla de puntos
+# y así crear una matriz espacial ponderada
 
-# Plot the frequency of the p-values
-hist(LocalI@data[,"Pr"], col="blue", xlab="p-value")
+nb <- cell2nb(nrow = SpatialPixels(datosRindeMaiz, tolerance = 0.00503112)@grid@cells.dim["Lat"], 
+              ncol = SpatialPixels(datosRindeMaiz, tolerance = 0.00503112)@grid@cells.dim["Long"], 
+              type = "rook", torus = TRUE)
 
-# Plot the critical values (z) using spplot
-spplot(LocalI, "Z.Ii", xlab="Local Morans-I", col.regions = brewer.pal(n = 11, "Spectral"))
+# Plotear matriz espacial de vecinos
+plot.nb(x = nb, coords = datosRindeMaiz@coords, col="red")
 
-# The high and low have no distinct I values so one must create a vector to distinguish significant and high hotspots. Red represents hot spots. This is a spatial points object that can be written out as a shape file or ASCII flat file with associated coordinates.
-LocalI@data <- data.frame(LocalI@data, 
-                          HotSpots = ifelse( mI[,5] <= 0.05 & mI[,4] >= mean(mI[,4]), 1, 0))
-LocalI@data$HotSpots <- as.factor(LocalI@data$HotSpots)
-spplot(LocalI, "HotSpots", xlab = "Local Moran’s-I Hot Spots", col.regions = c("blue","red") )
+# Plot de dispersión de Moran
+moranPlotC1 <- moran.plot(x = datosRindeMaiz$ajusteC1.M1, 
+                          listw = nb2listw(nb), 
+                          labels = as.character(1:nrow(datosRindeMaiz)),
+                          pch = 19, 
+                          cex = 0.3, 
+                          col = "darkred",
+                          ylab = "Valores espacialmente retrasados",
+                          xlab = "Rendimiento de maíz (t/ha)",
+                          main = "C1")
+
+moranPlotC2 <- moran.plot(x = datosRindeMaiz$ajusteC2.M1, 
+                          listw = nb2listw(nb), 
+                          labels = as.character(1:nrow(datosRindeMaiz)),
+                          pch = 19, 
+                          cex = 0.3, 
+                          col = "darkred",
+                          ylab = "Valores espacialmente retrasados",
+                          xlab = "Rendimiento de maíz (t/ha)",
+                          main = "C1")
+
+# Puntos influyentes
+summary(moranPlotC1)
+summary(moranPlotC2)
+
+# Filas de puntos influyentes
+ptosInfC1 <- as.numeric(rownames(summary(moranPlotC1)))
+ptosInfC2 <- as.numeric(rownames(summary(moranPlotC2)))
+
+# Histograma de distancias de Cook
+hist(moranPlotC1$infmat[ptosInfC1,"cook.d"], seq(0, 0.1, 0.0025), 
+     col = "black", border = "white", 
+     xlab = "Distancia de Cook", ylab = "Frecuencia", 
+     main = "C1", xlim = c(0, 0.08))
+
+hist(moranPlotC2$infmat[ptosInfC2,"cook.d"], seq(0, 0.1, 0.0025), 
+     col = "black", border = "white", 
+     xlab = "Distancia de Cook", ylab = "Frecuencia", 
+     main = "C2", xlim = c(0, 0.08))
+
+umbralCook <- 4/nrow(datosRindeMaiz)
+
+# Outliers
+outliersC1 <- as.numeric(names(which(moranPlotC1$infmat[ptosInfC1,"cook.d"] > umbralCook)))
+outliersC2 <- as.numeric(names(which(moranPlotC2$infmat[ptosInfC2,"cook.d"] > umbralCook)))
+
+# Plot C1
+spplot(datosRindeMaiz, zcol = "ajusteC1.M1", colorkey = TRUE)
+spplot(datosRindeMaiz[-c(outliersC1),], zcol = "ajusteC1.M1", colorkey = TRUE)
+
+# Plot C2
+spplot(datosRindeMaiz, zcol = "ajusteC2.M1", colorkey = TRUE)
+spplot(datosRindeMaiz[-c(outliersC2),], zcol = "ajusteC1.M1", colorkey = TRUE)
+
 
 ```
 
+
+```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+
+# Mapa de puntos de rendimiento de maíz para el lote
+spplot(obj = datosRindeMaiz, zcol = c("ajusteC1.M1", "ajusteC2.M1"), main = "Rendimiento de maíz (t/ha)")
+
+```
 
 ```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
