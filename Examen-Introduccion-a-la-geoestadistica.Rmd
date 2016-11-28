@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
+  pdf_document:
+    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
-    toc: yes
-  pdf_document:
     toc: yes
 ---
 
@@ -360,6 +360,9 @@ Se llamó a la función `ResumenEstadisticas` pasando como parámetro el `data.f
 
 # Crear objeto con las principales estadísticas y mostrarlo en consola
 (resumenDatosRindeMaiz <- ResumenEstadisticas(df = datosRindeMaiz@data))
+
+# Marcar celdas vacías
+NAs <- which(is.na(datosRindeMaiz$maizC1))
 
 ```
 
@@ -754,13 +757,9 @@ A partir de los gráficos de dispersión y suavizado de medias, no se observó u
 Se calculó el coeficiente de correlación de Pearson ($r$) para cuantificar la relación entre las variables para las cuales se observó tendencia y para las que no. Para complementar la interpretación, se realizaron correlogramas para visualizar la matriz de correlaciones. 
 
 ```{r}
-
-# Datos vacíos en Rendimiento de maíz para C1
-NAs <- is.na(datosRindeMaiz@data$maizC1)
-
 # Rendimiento maíz vs Longitud para C1
-cor.test(x = datosRindeMaiz@coords[!NAs,"Long"], 
-         y = datosRindeMaiz@data$maizC1[!NAs], 
+cor.test(x = datosRindeMaiz@coords[-NAs,"Long"], 
+         y = datosRindeMaiz@data$maizC1[-NAs], 
          method = "pearson")
 # Rendimiento maíz vs Longitud para C2
 cor.test(x = datosRindeMaiz@coords[,"Long"], 
@@ -768,8 +767,8 @@ cor.test(x = datosRindeMaiz@coords[,"Long"],
          method = "pearson")
 
 # Rendimiento maíz vs Latitud para C1
-cor.test(x = datosRindeMaiz@coords[!NAs,"Lat"], 
-         y = datosRindeMaiz@data$maizC1[!NAs], 
+cor.test(x = datosRindeMaiz@coords[-NAs,"Lat"], 
+         y = datosRindeMaiz@data$maizC1[-NAs], 
          method = "pearson")
 # Rendimiento maíz vs Latitud para C2
 cor.test(x = datosRindeMaiz@coords[,"Lat"], 
@@ -777,8 +776,8 @@ cor.test(x = datosRindeMaiz@coords[,"Lat"],
          method = "pearson")
 
 # Rendimiento maíz vs Elevación para C1
-cor.test(x = datosRindeMaiz@data$Elev[!NAs], 
-         y = datosRindeMaiz@data$maizC1[!NAs], 
+cor.test(x = datosRindeMaiz@data$Elev[-NAs], 
+         y = datosRindeMaiz@data$maizC1[-NAs], 
          method = "pearson")
 # Rendimiento maíz vs Elevación para C2
 cor.test(x = datosRindeMaiz@data$Elev, 
@@ -786,8 +785,8 @@ cor.test(x = datosRindeMaiz@data$Elev,
          method = "pearson")
 
 # Rendimiento maíz vs Profundidad de la napa para C1
-cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], 
-         y = datosRindeMaiz@data$maizC1[!NAs], 
+cor.test(x = datosRindeMaiz@data$NapaDicC1[-NAs], 
+         y = datosRindeMaiz@data$maizC1[-NAs], 
          method = "pearson")
 # Rendimiento maíz vs Profundidad de la napa para C2
 cor.test(x = datosRindeMaiz@data$NapaDicC2, 
@@ -795,8 +794,8 @@ cor.test(x = datosRindeMaiz@data$NapaDicC2,
          method = "pearson")
 
 # Profundidad de la napa vs Elevación para C1
-cor.test(x = datosRindeMaiz@data$NapaDicC1[!NAs], 
-         y = datosRindeMaiz@data$Elev[!NAs], 
+cor.test(x = datosRindeMaiz@data$NapaDicC1[-NAs], 
+         y = datosRindeMaiz@data$Elev[-NAs], 
          method = "pearson")
 # Profundidad de la napa vs Elevación para C2
 cor.test(x = datosRindeMaiz@data$NapaDicC2, 
@@ -867,7 +866,7 @@ AIC(ajusteC2.M1, ajusteC2.M2, ajusteC2.M3)
 
 ```
 
-El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($y = \beta_{1}x_{1} + \beta_{2}x_{1} + \beta_{0}$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
+El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($y = \beta_{1}x_{1}+ \beta_{2}x_{1}+ \beta_{0}$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
 
 ```{r, fig.height=8, fig.width=8}
 
@@ -898,19 +897,24 @@ La varianza explicada por el modelo elegido fue de $73.91%$ y de $72.96%$ para C
 
 ```{r}
 
-# Agregar modelo de tendencia a los datos
+# Agregar modelo de tendencia y residuales a los datos
 
 # C1
 datosRindeMaiz$ajusteC1.M1 <- 
   ajusteC1.M1$coefficients["NapaDicC1"] * datosRindeMaiz$NapaDicC1 +
   ajusteC1.M1$coefficients["Elev"] * datosRindeMaiz$Elev +
   ajusteC1.M1$coefficients["(Intercept)"]
+
+datosRindeMaiz$resAjusteC1.M1 <- NA
+datosRindeMaiz$resAjusteC1.M1[-NAs] <- residuals(ajusteC1.M1)
   
 # C2
 datosRindeMaiz$ajusteC2.M1 <- 
   ajusteC2.M1$coefficients["NapaDicC2"] * datosRindeMaiz$NapaDicC2 +
   ajusteC2.M1$coefficients["Elev"] * datosRindeMaiz$Elev +
   ajusteC2.M1$coefficients["(Intercept)"]
+
+datosRindeMaiz$resAjusteC2.M1 <- residuals(ajusteC2.M1)
 
 ```
 
@@ -923,7 +927,7 @@ Para examinar patrones de autocorrelación espacial se realizaron correlogramas 
 # Índice de Moran para el rendimiento de maíz - C1
 moranRendMaizC1 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
                             y = as.data.frame(datosRindeMaiz@coords)$Lat, 
-                            z = datosRindeMaiz$ajusteC1.M1, 
+                            z = datosRindeMaiz$resAjusteC1.M1, 
                             increment = 100, 
                             resamp = 0, 
                             latlon = FALSE, 
@@ -932,7 +936,7 @@ moranRendMaizC1 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long,
 # Índice de Moran para el rendimiento de maíz - C2
 moranRendMaizC2 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
                             y = as.data.frame(datosRindeMaiz@coords)$Lat, 
-                            z = datosRindeMaiz$ajusteC2.M1, 
+                            z = datosRindeMaiz$resAjusteC2.M1, 
                             increment = 100, 
                             resamp = 0, 
                             latlon = FALSE, 
@@ -1004,47 +1008,41 @@ Para detectar valores atípicos espaciales se analizó el gráfico de dispersió
 
 ```{r, warning=FALSE}
 
-# Convertir el objeto SpatialPointsDataFrame a SpatialPixels para estimar
-# el número de filas y columnas de la grilla de puntos y así crear una 
-# matriz espacial de vecinos ponderada
-
-nb <- cell2nb(nrow = SpatialPixels(datosRindeMaiz, tolerance = 0.00503112)@grid@cells.dim["Lat"], 
-              ncol = SpatialPixels(datosRindeMaiz, tolerance = 0.00503112)@grid@cells.dim["Long"], 
-              type = "rook", torus = TRUE)
-(nb)
+# Crear matriz de vecinos por distancias
+nbC1 <- dnearneigh(datosRindeMaiz[-NAs,], 0, 25)
+nbC2 <- dnearneigh(datosRindeMaiz, 0, 25)
 
 # Plotear matriz espacial de vecinos
-plot.nb(x = nb, coords = datosRindeMaiz@coords, col = "red")
+plot.nb(x = nbC1, coords = datosRindeMaiz@coords[-NAs,], col = "red")
+plot.nb(x = nbC2, coords = datosRindeMaiz@coords, col = "red")
 
 ```
 
 ```{r, fig.height=7, fig.width=8, message=FALSE, warning=FALSE}
 
 # Plot de dispersión de Moran
-moranPlotC1 <- moran.plot(x = datosRindeMaiz$ajusteC1.M1, 
-                          listw = nb2listw(nb), 
-                          labels = as.character(1:nrow(datosRindeMaiz)),
+moranPlotC1 <- moran.plot(x = datosRindeMaiz$resAjusteC1.M1[-NAs], 
+                          listw = nb2listw(nbC1), 
+                          labels = as.character(1:nrow(datosRindeMaiz[-NAs])),
                           pch = 19, 
                           cex = 0.3, 
                           col = "darkred",
                           ylab = "Valores espacialmente retrasados",
-                          xlab = "Rendimiento de maíz (t/ha)",
+                          xlab = "Residuales",
                           main = "C1")
-
 ```
 
 ```{r, fig.height=7, fig.width=8, message=FALSE, warning=FALSE}
 
-moranPlotC2 <- moran.plot(x = datosRindeMaiz$ajusteC2.M1, 
-                          listw = nb2listw(nb), 
+moranPlotC2 <- moran.plot(x = datosRindeMaiz$resAjusteC2.M1,
+                          listw = nb2listw(nbC2), 
                           labels = as.character(1:nrow(datosRindeMaiz)),
                           pch = 19, 
                           cex = 0.3, 
                           col = "darkred",
                           ylab = "Valores espacialmente retrasados",
-                          xlab = "Rendimiento de maíz (t/ha)",
+                          xlab = "Residuales",
                           main = "C2")
-
 ```
 
 ```{r, message=FALSE, warning=FALSE}
@@ -1061,19 +1059,21 @@ ptosInfC2 <- as.numeric(rownames(summary(moranPlotC2)))
 
 par(mfrow= c(1,2))
 
-hist(moranPlotC1$infmat[ptosInfC1,"cook.d"], seq(0, 0.1, 0.0025), 
+hist(moranPlotC1$infmat[ptosInfC1,"cook.d"], seq(0, 0.13, 0.002), 
      col = "black", border = "white", 
      xlab = "Distancias de Cook", ylab = "Frecuencia", 
-     main = "C1", xlim = c(0, 0.08))
+     main = "C1")
 
-histCookDistC2 <- hist(moranPlotC2$infmat[ptosInfC2,"cook.d"], seq(0, 0.1, 0.0025), 
+hist(moranPlotC2$infmat[ptosInfC2,"cook.d"], seq(0, 0.13, 0.002), 
      col = "black", border = "white", 
      xlab = "Distancias de Cook", ylab = "Frecuencia", 
-     main = "C2", xlim = c(0, 0.08))
+     main = "C2")
 
 par(mfrow=c(1,1))
 
 ```
+
+Se definió considerar como valores atípicos aquellos puntos con una distancia de Cook mayores a 0.02. 
 
 ```{r, message=FALSE, warning=FALSE}
 
@@ -1083,18 +1083,22 @@ umbralCook <- 4/nrow(datosRindeMaiz)
 outliersC1 <- as.numeric(names(which(moranPlotC1$infmat[ptosInfC1,"cook.d"] > umbralCook)))
 outliersC2 <- as.numeric(names(which(moranPlotC2$infmat[ptosInfC2,"cook.d"] > umbralCook)))
 
-# 
+# Agregar valores sin outliers
 datosRindeMaiz$ajusteC1.M1.SinOut <- NA
 datosRindeMaiz$ajusteC1.M1.SinOut[-outliersC1] <- datosRindeMaiz$ajusteC1.M1[-outliersC1]
+datosRindeMaiz$resAjusteC1.M1.SinOut <- NA
+datosRindeMaiz$resAjusteC1.M1.SinOut[-outliersC1] <- datosRindeMaiz$resAjusteC1.M1[-outliersC1]
 datosRindeMaiz$ajusteC2.M1.SinOut <- NA
 datosRindeMaiz$ajusteC2.M1.SinOut[-outliersC2] <- datosRindeMaiz$ajusteC2.M1[-outliersC2]
+datosRindeMaiz$resAjusteC2.M1.SinOut <- NA
+datosRindeMaiz$resAjusteC2.M1.SinOut[-outliersC2] <- datosRindeMaiz$resAjusteC2.M1[-outliersC2]
 
 ```
 
 ```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 
 # Plot C1
-spplot(datosRindeMaiz, zcol = c("ajusteC1.M1", "ajusteC1.M1.SinOut"), 
+spplot(datosRindeMaiz, zcol = c("resAjusteC1.M1", "resAjusteC1.M1.SinOut"), 
        names.attr = c("Modelo con outliers", "Modelo sin outliers"), colorkey = TRUE)
 
 ```
@@ -1102,7 +1106,7 @@ spplot(datosRindeMaiz, zcol = c("ajusteC1.M1", "ajusteC1.M1.SinOut"),
 ```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 
 # Plot C2
-spplot(datosRindeMaiz, zcol = c("ajusteC2.M1", "ajusteC2.M1.SinOut"), 
+spplot(datosRindeMaiz, zcol = c("resAjusteC2.M1", "resAjusteC2.M1.SinOut"), 
        names.attr = c("Modelo con outliers", "Modelo sin outliers"), colorkey = TRUE)
 
 ```
@@ -1138,59 +1142,66 @@ spplot(obj = datosRindeMaiz, zcol = "Elev", main = "Elevación (m)")
 
 ## Variograma empírico
 
-```{r}
+A partir del análisis de los variogramas empíricos puede decirse que existe estructura espacial para las dos campañas ya que:
 
-# Crear variograma experimental - C1
-varModC1 <- variogram(object = )
-
-
-```
-
-## Estructura espacial
+1. la semivarianza ($\gamma$) aumenta con la distancia hasta llegar a una meseta o plateau, que implica que la dependencia espacial va disminuyendo con la distancia hasta alcanzar la independencia espacial. 
+2. al utilizar los residuales de un modelo de tendencia se descarta cualquier efecto de dependencia espacial debido a la tendencia.
 
 ```{r}
 
-```
+# Nota: se utiliza la fórmula "maizC1 ~ NapaDicC1 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC1.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
 
-## Proceso espacial (isotropía y anisotropía)
+# Crear variograma empírico omnidireccional - C1
+varOmniC1 <- variogram(maizC1 ~ NapaDicC1 + Elev, 
+                       data = datosRindeMaiz[-c(NAs, outliersC1),], 
+                       width = 20, cutoff = 400)
+
+# Plotear variograma 
+plot(varOmniC1, xlab = "distancia", ylab = "semivarianza", main = "C1")
+
+```
 
 ```{r}
 
+# Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
+
+# Crear variograma empírico omnidireccional - C2
+varOmniC2 <- variogram(maizC2 ~ NapaDicC2 + Elev, 
+                       data = datosRindeMaiz[-outliersC2,], 
+                       width = 20, cutoff = 400)
+
+# Plotear variograma 
+plot(varOmniC2, xlab = "distancia", ylab = "semivarianza", main = "C2")
+
 ```
 
-## Dependencia espacial entre campañas
+## Proceso espacial: isotropía y anisotropía
 
-```{r}
+A partir de analizar los variogramas direccionales se concluyó que el proceso espacial en las dos campañas es isotrópico. No se observaron diferencias aparentes en los valores de la semivarianza para la cual la misma se estabiliza al alcanzar una meseta ($\gamma_{C1} = ~ 1.7$ $\gamma_{C2} = ~ 0.7$) ni tampoco a la distancia a la cual se llega a $\gamma$ ($distancia_{C1} = ~ 200$ y $distancia_{C2} = ~ 200$) para las distintas direcciones en el espacio ($0^{\circ}, 45^{\circ}, 90^{\circ} y 135^{\circ}$). 
+
+```{r, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+
+# Crear variograma empírico direccional - C1
+varDirC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
+                      data = datosRindeMaiz[-c(NAs,outliersC1),], 
+                      width = 20, cutoff = 400,
+                      alpha = c(0,45,90,135))
+
+# Plotear variograma 
+plot(varDirC1, xlab = "distancia", ylab = "semivarianza", main = "C1")
 
 ```
 
+```{r, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+varDirC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
+                      data = datosRindeMaiz[-outliersC2,], 
+                      width = 20, cutoff = 400,
+                      alpha = c(0,45,90,135))
 
-<!-- #### Diagramas de cajas -->
+# Plotear variograma 
+plot(varDirC2, xlab = "distancia", ylab = "semivarianza", main = "C2")
 
-<!-- ```{r, message=FALSE, warning=FALSE} -->
+```
 
-<!-- # Cambio la estructura de los datos (a efectos de poder agrupar las campañas en los boxplots para compararlas) (librería reshape2) -->
-<!-- datosRindeMaiz.m <- melt(data = datosRindeMaiz@data,  -->
-<!--                          id.var = c("ID", "Elev", "NapaDicC1", "NapaDicC2"), -->
-<!--                          measure.vars =  c("maizC1", "maizC2"),  -->
-<!--                          variable.name = "campaña",  -->
-<!--                          value.name = "rendMaiz") -->
-
-<!-- ggDatosRindeMaiz.m <- ggplot(data = datosRindeMaiz.m) -->
-
-<!-- # Rendimiento de Maiz ~ Categorias de Elevación -->
-
-<!-- # Crear 6 categorías de elevación (cada un metro) -->
-<!-- catElev <- cut(datosRindeMaiz.m$Elev, breaks = seq(from = 241, to = 248, by = 1)) -->
-
-<!-- # C1 y C2 -->
-<!-- ggBoxPlotMaizC1C2xElev <- ggDatosRindeMaiz.m +  -->
-<!--   geom_boxplot(aes(x = catElev, y = rendMaiz, fill = campaña), alpha = 0.7) + -->
-<!--   labs(title = "Rendimiento Maiz ~ Categorias de Elevación", x = "Elevación (m)", y = "Rendimiento Maíz (t/ha)") +  -->
-<!--   theme(legend.position = "top", legend.position = "horizontal") -->
-
-<!-- # Ver boxplot -->
-<!-- ggBoxPlotMaizC1C2xElev -->
-
-<!-- ``` -->
+La dependencia espacial no difiere entre campañas, ya que la distancia a la cual se llega a $\gamma$ ($distancia_{C1} = ~ 200$ y $distancia_{C2} = ~ 200$) es aproximadamente la misma para las dos campañas. 
 
