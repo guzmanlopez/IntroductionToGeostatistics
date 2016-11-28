@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -1011,7 +1011,6 @@ Para detectar valores atípicos espaciales se analizó el gráfico de dispersió
 nb <- cell2nb(nrow = SpatialPixels(datosRindeMaiz, tolerance = 0.00503112)@grid@cells.dim["Lat"], 
               ncol = SpatialPixels(datosRindeMaiz, tolerance = 0.00503112)@grid@cells.dim["Long"], 
               type = "rook", torus = TRUE)
-
 (nb)
 
 # Plotear matriz espacial de vecinos
@@ -1076,8 +1075,6 @@ par(mfrow=c(1,1))
 
 ```
 
-
-
 ```{r, message=FALSE, warning=FALSE}
 
 umbralCook <- 4/nrow(datosRindeMaiz)
@@ -1086,21 +1083,27 @@ umbralCook <- 4/nrow(datosRindeMaiz)
 outliersC1 <- as.numeric(names(which(moranPlotC1$infmat[ptosInfC1,"cook.d"] > umbralCook)))
 outliersC2 <- as.numeric(names(which(moranPlotC2$infmat[ptosInfC2,"cook.d"] > umbralCook)))
 
+# 
+datosRindeMaiz$ajusteC1.M1.SinOut <- NA
+datosRindeMaiz$ajusteC1.M1.SinOut[-outliersC1] <- datosRindeMaiz$ajusteC1.M1[-outliersC1]
+datosRindeMaiz$ajusteC2.M1.SinOut <- NA
+datosRindeMaiz$ajusteC2.M1.SinOut[-outliersC2] <- datosRindeMaiz$ajusteC2.M1[-outliersC2]
+
 ```
 
 ```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 
 # Plot C1
-spplot(datosRindeMaiz, zcol = "ajusteC1.M1", colorkey = TRUE)
-spplot(datosRindeMaiz[-c(outliersC1),], zcol = "ajusteC1.M1", colorkey = TRUE)
+spplot(datosRindeMaiz, zcol = c("ajusteC1.M1", "ajusteC1.M1.SinOut"), 
+       names.attr = c("Modelo con outliers", "Modelo sin outliers"), colorkey = TRUE)
 
 ```
 
 ```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 
 # Plot C2
-spplot(datosRindeMaiz, zcol = "ajusteC2.M1", colorkey = TRUE)
-spplot(datosRindeMaiz[-c(outliersC2),], zcol = "ajusteC1.M1", colorkey = TRUE)
+spplot(datosRindeMaiz, zcol = c("ajusteC2.M1", "ajusteC2.M1.SinOut"), 
+       names.attr = c("Modelo con outliers", "Modelo sin outliers"), colorkey = TRUE)
 
 ```
 
@@ -1137,6 +1140,8 @@ spplot(obj = datosRindeMaiz, zcol = "Elev", main = "Elevación (m)")
 
 ```{r}
 
+# Crear variograma experimental - C1
+varModC1 <- variogram(object = )
 
 
 ```
