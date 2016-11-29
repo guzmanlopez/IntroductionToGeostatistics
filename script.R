@@ -2,6 +2,8 @@
 # Ambiente de trabajo
 setwd("~/Documentos/GitHub/IntroductionToGeostatistics")
 
+load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
+
 # Cargar librerías --------------------------------------------------------
 
 # Geoestadística

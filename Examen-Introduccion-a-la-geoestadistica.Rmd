@@ -866,7 +866,7 @@ AIC(ajusteC2.M1, ajusteC2.M2, ajusteC2.M3)
 
 ```
 
-El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($y = \beta_{1}x_{1}+ \beta_{2}x_{1}+ \beta_{0}$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
+El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($y = \beta_{1}x_{1} + \beta_{2}x_{1} + \beta_{0}$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
 
 ```{r, fig.height=8, fig.width=8}
 
@@ -892,7 +892,7 @@ plot(impRel.C2.M1)
 
 ```
 
-La varianza explicada por el modelo elegido fue de $73.91%$ y de $72.96%$ para C1 y para C2 respectivamente. Se observó que la profundidad de la napa tuvo una importancia relativa mayor en el modelo de tendencia elegido que la elevación. Además, dicha observación fue más acentuada para la C1 que para la C2.  
+La varianza explicada por el modelo elegido fue de $73.91 \%$ y de $72.96 \%$ para C1 y para C2 respectivamente. Se observó que la profundidad de la napa tuvo una importancia relativa mayor en el modelo de tendencia elegido que la elevación. Además, dicha observación fue más acentuada para la C1 que para la C2.  
 
 
 ```{r}
@@ -1073,7 +1073,7 @@ par(mfrow=c(1,1))
 
 ```
 
-Se definió considerar como valores atípicos aquellos puntos con una distancia de Cook mayores a 0.02. 
+Se definió considerar como valores atípicos aquellos puntos con una distancia de Cook mayores a $4/N$, siendo $N$ el número total de observaciones.
 
 ```{r, message=FALSE, warning=FALSE}
 
@@ -1098,16 +1098,16 @@ datosRindeMaiz$resAjusteC2.M1.SinOut[-outliersC2] <- datosRindeMaiz$resAjusteC2.
 ```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 
 # Plot C1
-spplot(datosRindeMaiz, zcol = c("resAjusteC1.M1", "resAjusteC1.M1.SinOut"), 
-       names.attr = c("Modelo con outliers", "Modelo sin outliers"), colorkey = TRUE)
+spplot(datosRindeMaiz, zcol = c("resAjusteC1.M1.SinOut", "resAjusteC1.M1"), 
+       names.attr = c("Modelo sin outliers", "Modelo con outliers"), colorkey = TRUE)
 
 ```
 
 ```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 
 # Plot C2
-spplot(datosRindeMaiz, zcol = c("resAjusteC2.M1", "resAjusteC2.M1.SinOut"), 
-       names.attr = c("Modelo con outliers", "Modelo sin outliers"), colorkey = TRUE)
+spplot(datosRindeMaiz, zcol = c("resAjusteC2.M1.SinOut", "resAjusteC2.M1"), 
+       names.attr = c("Modelo sin outliers", "Modelo con outliers"), colorkey = TRUE)
 
 ```
 
@@ -1118,23 +1118,21 @@ Para observar los cambios en la media dentro del lote se realizaron mapas de pun
 ```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
 # Mapa de puntos de rendimiento de maíz para el lote
-spplot(obj = datosRindeMaiz, zcol = c("maizC1", "maizC2"), main = "Rendimiento de maíz (t/ha)")
+spplot(obj = datosRindeMaiz, zcol = c("maizC1", "maizC2"), main = "Rendimiento de maíz (t/ha)", colorkey = TRUE)
 
 ```
 
 ```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 # Mapa de puntos de la profundidad de la napa para el lote
-spplot(obj = datosRindeMaiz, zcol = c("NapaDicC1", "NapaDicC2"), main = "Profundidad napa (m)")
+spplot(obj = datosRindeMaiz, zcol = c("NapaDicC1", "NapaDicC2"), main = "Profundidad napa (m)", colorkey = TRUE)
 
 ```
 
 ```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 # Mapa de puntos de la elevación del lote
-spplot(obj = datosRindeMaiz, zcol = "Elev", main = "Elevación (m)")
+spplot(obj = datosRindeMaiz, zcol = "Elev", main = "Elevación (m)", colorkey = TRUE)
 
 ```
-
-## Valores atípicos
 
 # Respuesta 2
 
@@ -1147,7 +1145,7 @@ A partir del análisis de los variogramas empíricos puede decirse que existe es
 1. la semivarianza ($\gamma$) aumenta con la distancia hasta llegar a una meseta o plateau, que implica que la dependencia espacial va disminuyendo con la distancia hasta alcanzar la independencia espacial. 
 2. al utilizar los residuales de un modelo de tendencia se descarta cualquier efecto de dependencia espacial debido a la tendencia.
 
-```{r}
+```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
 
 # Nota: se utiliza la fórmula "maizC1 ~ NapaDicC1 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC1.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
 
@@ -1157,11 +1155,12 @@ varOmniC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
                        width = 20, cutoff = 400)
 
 # Plotear variograma 
-plot(varOmniC1, xlab = "distancia", ylab = "semivarianza", main = "C1")
+plot(varOmniC1, xlab = "distancia", ylab = "semivarianza", 
+     main = "Variograma empírico - C1", pch = 19)
 
 ```
 
-```{r}
+```{r,fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
 
 # Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
 
@@ -1171,7 +1170,8 @@ varOmniC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
                        width = 20, cutoff = 400)
 
 # Plotear variograma 
-plot(varOmniC2, xlab = "distancia", ylab = "semivarianza", main = "C2")
+plot(varOmniC2, xlab = "distancia", ylab = "semivarianza", 
+     main = "Variograma empírico - C2", pch = 19)
 
 ```
 
@@ -1179,7 +1179,7 @@ plot(varOmniC2, xlab = "distancia", ylab = "semivarianza", main = "C2")
 
 A partir de analizar los variogramas direccionales se concluyó que el proceso espacial en las dos campañas es isotrópico. No se observaron diferencias aparentes en los valores de la semivarianza para la cual la misma se estabiliza al alcanzar una meseta ($\gamma_{C1} = ~ 1.7$ $\gamma_{C2} = ~ 0.7$) ni tampoco a la distancia a la cual se llega a $\gamma$ ($distancia_{C1} = ~ 200$ y $distancia_{C2} = ~ 200$) para las distintas direcciones en el espacio ($0^{\circ}, 45^{\circ}, 90^{\circ} y 135^{\circ}$). 
 
-```{r, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
 
 # Crear variograma empírico direccional - C1
 varDirC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
@@ -1188,20 +1188,168 @@ varDirC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
                       alpha = c(0,45,90,135))
 
 # Plotear variograma 
-plot(varDirC1, xlab = "distancia", ylab = "semivarianza", main = "C1")
+plot(varDirC1, xlab = "distancia", ylab = "semivarianza", main = "C1", pch = 19)
 
 ```
 
-```{r, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
 varDirC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
                       data = datosRindeMaiz[-outliersC2,], 
                       width = 20, cutoff = 400,
                       alpha = c(0,45,90,135))
 
 # Plotear variograma 
-plot(varDirC2, xlab = "distancia", ylab = "semivarianza", main = "C2")
+plot(varDirC2, xlab = "distancia", ylab = "semivarianza", main = "C2", pch = 19)
 
 ```
 
 La dependencia espacial no difiere entre campañas, ya que la distancia a la cual se llega a $\gamma$ ($distancia_{C1} = ~ 200$ y $distancia_{C2} = ~ 200$) es aproximadamente la misma para las dos campañas. 
+
+# Respuesta 3
+
+> 3) Ajuste al menos tres tipos de modelos permisibles para cada uno de los variogramas muestrales obtenidos en el punto anterior y elija el mejor en cada caso justificando su elección a partir de un criterio cuantitativo objetivo. Utilice procedimientos de estimación estadísticos para ajustar el modelo del variograma. 
+
+## Ajustar modelos a variograma
+
+```{r}
+
+# Con geoR:
+
+dfC1 <- data.frame(as.data.frame(datosRindeMaiz@coords), 
+                   "ID" = datosRindeMaiz$ID,
+                   "Elev" = datosRindeMaiz$Elev,
+                   "NapaDicC1" = datosRindeMaiz$NapaDicC1,
+                   "maizC1" = datosRindeMaiz$maizC1,
+                   "resAjusteC1.M1.SinOut" = datosRindeMaiz$resAjusteC1.M1.SinOut)
+
+dfC1 <- dfC1[-outliersC1,]
+
+geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 6, covar.col = c(4,5))
+
+varGeoC1 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+
+plot(varGeoC1, pch = 19, col = "#0080FF", ylab = "semivarianza", xlab = "distancia")
+
+# Likelihood Based Parameter Estimation for Gaussian Random Fields
+# Default Maximum Likelihood
+
+likfitVarGeoC1.exp <- likfit(geodataC1, 
+                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                             ini.cov.pars = c(1.7,230),
+                             fix.nugget = FALSE,
+                             nugget = 0,
+                             cov.model = "exponential", 
+                             lik.method = "ML")
+
+likfitVarGeoC1.sph <- likfit(geodataC1, 
+                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                             ini.cov.pars = c(1.7,230),
+                             limits = pars.limits(phi = c(200,250), sigmasq = c(1.7,1.9)), 
+                             fix.nugget = FALSE,
+                             nugget = 0,
+                             cov.model = "spherical", 
+                             lik.method = "ML")
+
+likfitVarGeoC1.cub <- likfit(geodataC1, 
+                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                             ini.cov.pars = c(1.7,230),
+                             fix.nugget = FALSE,
+                             nugget = 0,
+                             cov.model = "cubic", 
+                             lik.method = "ML")
+
+likfitVarGeoC1.mat <- likfit(geodataC1, 
+                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                             ini.cov.pars = c(1.7,230),
+                             fix.nugget = FALSE,
+                             fix.kappa = FALSE,
+                             nugget = 0,
+                             cov.model = "matern", 
+                             lik.method = "ML")
+
+
+
+# Ajuste del modelo
+plot(varGeoC1,
+     ylab = "semivarianza", 
+     xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,4))
+lines.variomodel(likfitVarGeoC1.exp, col = "red")
+lines.variomodel(likfitVarGeoC1.sph, col = "red", lty = 2)
+lines.variomodel(likfitVarGeoC1.cub, col = "red", lty = 3)
+lines.variomodel(likfitVarGeoC1.mat, col = "red", lty = 3)
+
+
+likfitVarGeoC1.exp$AIC
+likfitVarGeoC1.sph$AIC
+likfitVarGeoC1.cub$AIC
+
+
+
+likfitVarGeoC1$cov.model
+likfitVarGeoC1$AIC
+
+
+likfitVarGeoC1b <- likfit(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), ini.cov.pars = c(1.7,200), fix.nugget = TRUE, nugget = 0, lik.method = "REML")
+
+
+
+# Ajustar modelo de variograma a C1
+
+# Modelos teóricos 
+
+# Esférico
+modTeoSph.C1 <- vgm(psill = 1.7, model = "Sph", range = 200, nugget = 0)
+
+# Exponencial
+modTeoExp.C1 <- vgm(psill = 1.7, model = "Exp", range = 200, nugget = 0)
+
+# Circular
+modTeoCir.C1 <- vgm(psill = 1.7, model = "Cir", range = 200, nugget = 0)
+
+# Tomar muestra aleatoria de 100 puntos
+sampleC1 <- sample(datosRindeMaiz$ID[-c(NAs, outliersC1)], size = 150)
+
+variog
+
+# Ajustar modelos a variogramas
+fitVarC1.Sph <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+                                  data = datosRindeMaiz[sampleC1,],
+                                  model = modTeoSph.C1,
+                                  cutoff = 400) 
+
+fitVarC1.Exp <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+                                  data = datosRindeMaiz[sampleC1,],
+                                  model = modTeoExp.C1,
+                                  cutoff = 400) 
+
+fitVarC1.Cir <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+                                  data = datosRindeMaiz[sampleC1,],
+                                  model = modTeoCir.C1,
+                                  cutoff = 400) 
+
+# fitVarC1.SphREML <- fit.variogram.reml(formula = maizC1 ~ NapaDicC1 + Elev,
+#                                    data = datosRindeMaiz[sampleC1,],
+#                                    model = modTeoSph.C1,
+#                                    debug.level = 65,
+#                                    set = list(iter=1000))
+
+
+
+# Plotear variograma experimental y ajuste modelo teórico
+plot(x = varOmniC1$dist, y = varOmniC1$gamma, main = "Modelos", 
+     col = "#0080FF", ylab = "semivarianza", xlab = "distancia", 
+     ylim = c(0, 3), pch = 19)
+lines(variogramLine(object = fitVarC1.Sph, maxdist = 500), col = "red", lwd = 1)
+lines(variogramLine(object = fitVarC1.Exp, maxdist = 500), col = "red", lwd = 1, lty = 2)
+
+obs <- varOmniC1$gamma
+esp <- 
+
+AIC(fitVarC1.Sph, fitVarC1.Exp)
+
+fitVarOmniC1.1 <- fit.variogram(object = varOmniC1, model = modTeoSph.C1, fit.method = 1) 
+
+
+
+```
 
