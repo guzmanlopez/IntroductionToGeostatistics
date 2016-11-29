@@ -552,5 +552,96 @@ X11()
 #              layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
 #              )
 
+# Con librería gstat:
+# # Nota: se utiliza la fórmula "maizC1 ~ NapaDicC1 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC1.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
+# 
+# # Crear variograma empírico omnidireccional - C1
+# varOmniC1 <- variogram(maizC1 ~ NapaDicC1 + Elev, 
+#                        data = datosRindeMaiz[-c(NAs, outliersC1),], 
+#                        width = 20, cutoff = 400)
+# 
+# # Plotear variograma 
+# plot(varOmniC1, xlab = "distancia", ylab = "semivarianza", 
+#      main = "Variograma empírico - C1", pch = 19)
 
+# Con librería gstat:
+# # Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
+# 
+# # Crear variograma empírico omnidireccional - C2
+# varOmniC2 <- variogram(maizC2 ~ NapaDicC2 + Elev, 
+#                        data = datosRindeMaiz[-outliersC2,], 
+#                        width = 20, cutoff = 400)
+# 
+# # Plotear variograma 
+# plot(varOmniC2, xlab = "distancia", ylab = "semivarianza", 
+#      main = "Variograma empírico - C2", pch = 19)
+
+# Con gstat:
+# # Crear variograma empírico direccional - C1
+# varDirC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
+#                       data = datosRindeMaiz[-c(NAs,outliersC1),], 
+#                       width = 20, cutoff = 400,
+#                       alpha = c(0,45,90,135))
+# 
+# # Plotear variograma 
+# plot(varDirC1, xlab = "distancia", ylab = "semivarianza", main = "C1", pch = 19)
+
+
+# Con gstat:
+# varDirC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
+#                       data = datosRindeMaiz[-outliersC2,], 
+#                       width = 20, cutoff = 400,
+#                       alpha = c(0,45,90,135))
+# 
+# # Plotear variograma 
+# plot(varDirC2, xlab = "distancia", ylab = "semivarianza", main = "C2", pch = 19)
+
+# # Ajustar modelo de variograma a C1
+# 
+# # Modelos teóricos 
+# 
+# # Esférico
+# modTeoSph.C1 <- vgm(psill = 1.7, model = "Sph", range = 200, nugget = 0)
+# 
+# # Exponencial
+# modTeoExp.C1 <- vgm(psill = 1.7, model = "Exp", range = 200, nugget = 0)
+# 
+# # Circular
+# modTeoCir.C1 <- vgm(psill = 1.7, model = "Cir", range = 200, nugget = 0)
+# 
+# # Tomar muestra aleatoria de 100 puntos
+# sampleC1 <- sample(datosRindeMaiz$ID[-c(NAs, outliersC1)], size = 150)
+# 
+# variog
+# 
+# # Ajustar modelos a variogramas
+# fitVarC1.Sph <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+#                                   data = datosRindeMaiz[sampleC1,],
+#                                   model = modTeoSph.C1,
+#                                   cutoff = 400) 
+# 
+# fitVarC1.Exp <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+#                                   data = datosRindeMaiz[sampleC1,],
+#                                   model = modTeoExp.C1,
+#                                   cutoff = 400) 
+# 
+# fitVarC1.Cir <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+#                                   data = datosRindeMaiz[sampleC1,],
+#                                   model = modTeoCir.C1,
+#                                   cutoff = 400) 
+
+# fitVarC1.SphREML <- fit.variogram.reml(formula = maizC1 ~ NapaDicC1 + Elev,
+#                                    data = datosRindeMaiz[sampleC1,],
+#                                    model = modTeoSph.C1,
+#                                    debug.level = 65,
+#                                    set = list(iter=1000))
+
+
+
+# # Plotear variograma experimental y ajuste modelo teórico
+# plot(x = varOmniC1$dist, y = varOmniC1$gamma, main = "Modelos", 
+#      col = "#0080FF", ylab = "semivarianza", xlab = "distancia", 
+#      ylim = c(0, 3), pch = 19)
+# lines(variogramLine(object = fitVarC1.Sph, maxdist = 500), col = "red", lwd = 1)
+# lines(variogramLine(object = fitVarC1.Exp, maxdist = 500), col = "red", lwd = 1, lty = 2)
 

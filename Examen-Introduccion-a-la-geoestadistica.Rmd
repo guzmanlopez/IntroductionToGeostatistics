@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -1147,31 +1147,40 @@ A partir del análisis de los variogramas empíricos puede decirse que existe es
 
 ```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
 
-# Nota: se utiliza la fórmula "maizC1 ~ NapaDicC1 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC1.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
+# Con geoR:
+dfC1 <- data.frame(as.data.frame(datosRindeMaiz@coords), 
+                   "ID" = datosRindeMaiz$ID,
+                   "Elev" = datosRindeMaiz$Elev,
+                   "NapaDicC1" = datosRindeMaiz$NapaDicC1,
+                   "maizC1" = datosRindeMaiz$maizC1,
+                   "resAjusteC1.M1.SinOut" = datosRindeMaiz$resAjusteC1.M1.SinOut)
 
-# Crear variograma empírico omnidireccional - C1
-varOmniC1 <- variogram(maizC1 ~ NapaDicC1 + Elev, 
-                       data = datosRindeMaiz[-c(NAs, outliersC1),], 
-                       width = 20, cutoff = 400)
+dfC2 <- data.frame(as.data.frame(datosRindeMaiz@coords), 
+                   "ID" = datosRindeMaiz$ID,
+                   "Elev" = datosRindeMaiz$Elev,
+                   "NapaDicC2" = datosRindeMaiz$NapaDicC2,
+                   "maizC2" = datosRindeMaiz$maizC2,
+                   "resAjusteC2.M1.SinOut" = datosRindeMaiz$resAjusteC2.M1.SinOut)
 
-# Plotear variograma 
-plot(varOmniC1, xlab = "distancia", ylab = "semivarianza", 
-     main = "Variograma empírico - C1", pch = 19)
+# Sacar outliers
+dfC1 <- dfC1[-outliersC1,]
+dfC2 <- dfC2[-outliersC2,]
 
-```
+# Objeto geodata
+geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 6, covar.col = c(4,5))
+geodataC2 <- as.geodata(obj = dfC2, coords.col = 1:2, data.col = 6, covar.col = c(4,5))
 
-```{r,fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
+# Crear variograma empírico con el modelo de tendencia elegido
+varGeoC1 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                   max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC2 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                   max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
 
-# Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
-
-# Crear variograma empírico omnidireccional - C2
-varOmniC2 <- variogram(maizC2 ~ NapaDicC2 + Elev, 
-                       data = datosRindeMaiz[-outliersC2,], 
-                       width = 20, cutoff = 400)
-
-# Plotear variograma 
-plot(varOmniC2, xlab = "distancia", ylab = "semivarianza", 
-     main = "Variograma empírico - C2", pch = 19)
+# Plot variogramas
+par(mfrow = c(1,2))
+plot(varGeoC1, pch = 19, col = "#0080FF", ylab = "semivarianza", xlab = "distancia", main = "C1")
+plot(varGeoC2, pch = 19, col = "#0080FF", ylab = "semivarianza", xlab = "distancia", main = "C2")
+par(mfrow = c(1,1))
 
 ```
 
@@ -1181,25 +1190,71 @@ A partir de analizar los variogramas direccionales se concluyó que el proceso e
 
 ```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
 
-# Crear variograma empírico direccional - C1
-varDirC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
-                      data = datosRindeMaiz[-c(NAs,outliersC1),], 
-                      width = 20, cutoff = 400,
-                      alpha = c(0,45,90,135))
+# Crear variogramas direccionales
+varGeoC1dir0 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                      direction = 0, tolerance = 45/2, unit.angle = "degrees",
+                      max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC1dir45 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                      direction = 45, tolerance = 45/2, unit.angle = "degrees",
+                      max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC1dir90 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                      direction = 90, tolerance = 45/2, unit.angle = "degrees",
+                      max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC1dir135 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                      direction = 135, tolerance = 45/2, unit.angle = "degrees",
+                      max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
 
-# Plotear variograma 
-plot(varDirC1, xlab = "distancia", ylab = "semivarianza", main = "C1", pch = 19)
+# Plot variogramas direccionales 
+# C1
+par(mfrow = c(2,2))
+plot(varGeoC1dir0, pch = 19, col = "#0080FF", ylim = c(0,2), 
+     ylab = "semivarianza", xlab = "distancia", main = "0 grado")
+grid()
+plot(varGeoC1dir45, pch = 19, col = "#0080FF", ylim = c(0,2), 
+     ylab = "semivarianza", xlab = "distancia", main = "45 grados")
+grid()
+plot(varGeoC1dir90, pch = 19, col = "#0080FF", ylim = c(0,2),
+     ylab = "semivarianza", xlab = "distancia", main = "90 grados")
+grid()
+plot(varGeoC1dir135, pch = 19, col = "#0080FF", ylim = c(0,2),
+     ylab = "semivarianza", xlab = "distancia", main = "135 grados")
+grid()
+par(mfrow = c(1,1))
 
 ```
 
 ```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
-varDirC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
-                      data = datosRindeMaiz[-outliersC2,], 
-                      width = 20, cutoff = 400,
-                      alpha = c(0,45,90,135))
 
-# Plotear variograma 
-plot(varDirC2, xlab = "distancia", ylab = "semivarianza", main = "C2", pch = 19)
+# Crear variogramas direccionales
+varGeoC2dir0 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                      direction = 0, tolerance = 45/2, unit.angle = "degrees",
+                      max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC2dir45 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                      direction = 45, tolerance = 45/2, unit.angle = "degrees",
+                      max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC2dir90 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                      direction = 90, tolerance = 45/2, unit.angle = "degrees",
+                      max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC2dir135 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                      direction = 135, tolerance = 45/2, unit.angle = "degrees",
+                      max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+
+# Plot variogramas direccionales 
+# C2
+par(mfrow = c(2,2))
+plot(varGeoC2dir0, pch = 19, col = "#0080FF", ylim = c(0,1), 
+     ylab = "semivarianza", xlab = "distancia", main = "0 grado")
+grid()
+plot(varGeoC2dir45, pch = 19, col = "#0080FF", ylim = c(0,1), 
+     ylab = "semivarianza", xlab = "distancia", main = "45 grados")
+grid()
+plot(varGeoC2dir90, pch = 19, col = "#0080FF", ylim = c(0,1),
+     ylab = "semivarianza", xlab = "distancia", main = "90 grados")
+grid()
+plot(varGeoC2dir135, pch = 19, col = "#0080FF", ylim = c(0,1),
+     ylab = "semivarianza", xlab = "distancia", main = "135 grados")
+grid()
+par(mfrow = c(1,1))
 
 ```
 
@@ -1213,61 +1268,40 @@ La dependencia espacial no difiere entre campañas, ya que la distancia a la cua
 
 ```{r}
 
-# Con geoR:
-
-dfC1 <- data.frame(as.data.frame(datosRindeMaiz@coords), 
-                   "ID" = datosRindeMaiz$ID,
-                   "Elev" = datosRindeMaiz$Elev,
-                   "NapaDicC1" = datosRindeMaiz$NapaDicC1,
-                   "maizC1" = datosRindeMaiz$maizC1,
-                   "resAjusteC1.M1.SinOut" = datosRindeMaiz$resAjusteC1.M1.SinOut)
-
-dfC1 <- dfC1[-outliersC1,]
-
-geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 6, covar.col = c(4,5))
-
-varGeoC1 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
-
-plot(varGeoC1, pch = 19, col = "#0080FF", ylab = "semivarianza", xlab = "distancia")
-
 # Likelihood Based Parameter Estimation for Gaussian Random Fields
 # Default Maximum Likelihood
 
-likfitVarGeoC1.exp <- likfit(geodataC1, 
-                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-                             ini.cov.pars = c(1.7,230),
-                             fix.nugget = FALSE,
-                             nugget = 0,
-                             cov.model = "exponential", 
-                             lik.method = "ML")
+# Matriz de posibles parámetros iniciales de rango y meseta
+iniCovPars <- cbind("sigma" = rep(seq(1.5, 2.2, length.out = 10), 2), 
+                    "phi" = c(seq(200, 300, length.out = 10), rev(seq(200, 300, length.out = 10))))
 
-likfitVarGeoC1.sph <- likfit(geodataC1, 
-                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-                             ini.cov.pars = c(1.7,230),
-                             limits = pars.limits(phi = c(200,250), sigmasq = c(1.7,1.9)), 
-                             fix.nugget = FALSE,
-                             nugget = 0,
-                             cov.model = "spherical", 
-                             lik.method = "ML")
+iniCovPars <- as.matrix(iniCovPars)
 
-likfitVarGeoC1.cub <- likfit(geodataC1, 
-                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-                             ini.cov.pars = c(1.7,230),
-                             fix.nugget = FALSE,
-                             nugget = 0,
-                             cov.model = "cubic", 
-                             lik.method = "ML")
-
-likfitVarGeoC1.mat <- likfit(geodataC1, 
-                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-                             ini.cov.pars = c(1.7,230),
-                             fix.nugget = FALSE,
-                             fix.kappa = FALSE,
-                             nugget = 0,
-                             cov.model = "matern", 
-                             lik.method = "ML")
-
-
+# likfitVarGeoC1.exp <- likfit(geodataC1, 
+#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+#                              ini.cov.pars = iniCovPars,
+#                              fix.nugget = TRUE,
+#                              nugget = 0,
+#                              cov.model = "exponential", 
+#                              lik.method = "ML")
+# 
+# likfitVarGeoC1.sph <- likfit(geodataC1, 
+#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+#                              ini.cov.pars = iniCovPars,
+#                              limits = pars.limits(phi = c(200,250), sigmasq = c(1.7,1.9)), 
+#                              fix.nugget = TRUE,
+#                              nugget = 0,
+#                              cov.model = "spherical", 
+#                              lik.method = "ML")
+# 
+# likfitVarGeoC1.powexp <- likfit(geodataC1, 
+#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+#                              ini.cov.pars = iniCovPars,
+#                              fix.nugget = TRUE,
+#                              fix.kappa = FALSE,
+#                              nugget = 0,
+#                              cov.model = "powered.exponential", 
+#                              lik.method = "ML")
 
 # Ajuste del modelo
 plot(varGeoC1,
@@ -1275,81 +1309,30 @@ plot(varGeoC1,
      xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,4))
 lines.variomodel(likfitVarGeoC1.exp, col = "red")
 lines.variomodel(likfitVarGeoC1.sph, col = "red", lty = 2)
-lines.variomodel(likfitVarGeoC1.cub, col = "red", lty = 3)
-lines.variomodel(likfitVarGeoC1.mat, col = "red", lty = 3)
+lines.variomodel(likfitVarGeoC1.powexp, col = "red", lty = 5)
+grid()
 
-
+# Selección de modelo por criterio de información de Akaike
 likfitVarGeoC1.exp$AIC
 likfitVarGeoC1.sph$AIC
-likfitVarGeoC1.cub$AIC
+likfitVarGeoC1.powexp$AIC
+
+```
+
+# Respuesta 4
+
+> 4) Realice una interpolación para los datos de rinde de cada campaña mediante kriging ordinario puntual y kriging en bloque. Utilice una grilla de predicción hasta la mitad de fina que la originalmente provista para el kriging puntual y un tamaño de bloque que agrupe al menos nueve observaciones originales. Elabore para cada campaña tanto mapas del rinde de maíz predicho, como de la variabilidad de la predicción. Justifique todas las decisiones necesarias para realizar estas interpolaciones.  
+
+## Kriging Ordinario Puntual
+
+```{r}
+
+```
 
 
+## Kriging en Bloque
 
-likfitVarGeoC1$cov.model
-likfitVarGeoC1$AIC
-
-
-likfitVarGeoC1b <- likfit(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), ini.cov.pars = c(1.7,200), fix.nugget = TRUE, nugget = 0, lik.method = "REML")
-
-
-
-# Ajustar modelo de variograma a C1
-
-# Modelos teóricos 
-
-# Esférico
-modTeoSph.C1 <- vgm(psill = 1.7, model = "Sph", range = 200, nugget = 0)
-
-# Exponencial
-modTeoExp.C1 <- vgm(psill = 1.7, model = "Exp", range = 200, nugget = 0)
-
-# Circular
-modTeoCir.C1 <- vgm(psill = 1.7, model = "Cir", range = 200, nugget = 0)
-
-# Tomar muestra aleatoria de 100 puntos
-sampleC1 <- sample(datosRindeMaiz$ID[-c(NAs, outliersC1)], size = 150)
-
-variog
-
-# Ajustar modelos a variogramas
-fitVarC1.Sph <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-                                  data = datosRindeMaiz[sampleC1,],
-                                  model = modTeoSph.C1,
-                                  cutoff = 400) 
-
-fitVarC1.Exp <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-                                  data = datosRindeMaiz[sampleC1,],
-                                  model = modTeoExp.C1,
-                                  cutoff = 400) 
-
-fitVarC1.Cir <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-                                  data = datosRindeMaiz[sampleC1,],
-                                  model = modTeoCir.C1,
-                                  cutoff = 400) 
-
-# fitVarC1.SphREML <- fit.variogram.reml(formula = maizC1 ~ NapaDicC1 + Elev,
-#                                    data = datosRindeMaiz[sampleC1,],
-#                                    model = modTeoSph.C1,
-#                                    debug.level = 65,
-#                                    set = list(iter=1000))
-
-
-
-# Plotear variograma experimental y ajuste modelo teórico
-plot(x = varOmniC1$dist, y = varOmniC1$gamma, main = "Modelos", 
-     col = "#0080FF", ylab = "semivarianza", xlab = "distancia", 
-     ylim = c(0, 3), pch = 19)
-lines(variogramLine(object = fitVarC1.Sph, maxdist = 500), col = "red", lwd = 1)
-lines(variogramLine(object = fitVarC1.Exp, maxdist = 500), col = "red", lwd = 1, lty = 2)
-
-obs <- varOmniC1$gamma
-esp <- 
-
-AIC(fitVarC1.Sph, fitVarC1.Exp)
-
-fitVarOmniC1.1 <- fit.variogram(object = varOmniC1, model = modTeoSph.C1, fit.method = 1) 
-
-
+```{r}
 
 ```
 
