@@ -85,7 +85,8 @@ Se cargaron en `R` los datos espaciales de **rinde de maíz** y **covariables am
 ```{r}
 
 # Cargar datos
-datosRindeMaiz <- read.csv(file = "data/DataExamenGeo16.csv", header = TRUE, sep = ",", dec = ".")
+datosRindeMaiz <- read.csv(file = "data/DataExamenGeo16.csv", header = TRUE, 
+                           sep = ",", dec = ".")
 
 # Mostrar las primeras seis filas
 head(datosRindeMaiz)
@@ -156,7 +157,8 @@ ggHistMaizC1 <- ggDatosRindeMaiz +
   theme(plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotMaizC1 <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$maizC1, x = rep("RM", length(datosRindeMaiz$maizC1))), 
+  geom_boxplot(aes(y = datosRindeMaiz$maizC1, 
+                   x = rep("RM", length(datosRindeMaiz$maizC1))), 
                fill = "orange", col = "black", alpha = 0.8) + 
   labs(title = "C1", x = "", y = "") + 
   scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 2), position = "top") +
@@ -173,10 +175,12 @@ ggHistNapaDicC1 <- ggDatosRindeMaiz +
   theme(plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotNapaDicC1 <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$NapaDicC1, x = rep("PN", length(datosRindeMaiz$NapaDicC1))), 
+  geom_boxplot(aes(y = datosRindeMaiz$NapaDicC1, 
+                   x = rep("PN", length(datosRindeMaiz$NapaDicC1))), 
                fill = "darkblue", col = "black", alpha = 0.7) + 
   labs(title = "C1", x = "", y = "") + 
-  scale_y_continuous(limits = c(1.5, 6.75), breaks = seq(1.5, 6.75, 1), position = "top") + 
+  scale_y_continuous(limits = c(1.5, 6.75), 
+                     breaks = seq(1.5, 6.75, 1), position = "top") + 
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
 
@@ -190,27 +194,32 @@ ggHistMaizC2 <- ggDatosRindeMaiz +
   theme(plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotMaizC2 <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$maizC2, x = rep("RM", length(datosRindeMaiz$maizC2))), 
+  geom_boxplot(aes(y = datosRindeMaiz$maizC2, 
+                   x = rep("RM", length(datosRindeMaiz$maizC2))), 
                fill = "orange", col = "black", alpha = 0.8) + 
   labs(title = "C2", x = "", y = "") + 
-  scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 2), position = "top") +
+  scale_y_continuous(limits = c(0, 18), 
+                     breaks = seq(0, 18, 2), position = "top") +
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
 
 # Napa C2
 ggHistNapaDicC2 <- ggDatosRindeMaiz +
   geom_histogram(aes(x = datosRindeMaiz$NapaDicC2), 
-                 binwidth = 0.25, fill = "darkblue", col = "white", alpha = 0.7) +
+                 binwidth = 0.25, fill = "darkblue", col = "white", 
+                 alpha = 0.7) +
   labs(title = "", x = "Profundidad napa (m)", y = "Frecuencia") + 
   scale_x_continuous(limits = c(1.5, 6.75), breaks = seq(1.5, 6.75, 1)) + 
   scale_y_continuous(limits = c(0, 350), breaks = seq(0, 350, 50)) + 
   theme(plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotNapaDicC2 <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$NapaDicC2, x = rep("PN", length(datosRindeMaiz$NapaDicC2))), 
+  geom_boxplot(aes(y = datosRindeMaiz$NapaDicC2, 
+                   x = rep("PN", length(datosRindeMaiz$NapaDicC2))), 
                fill = "darkblue", col = "black", alpha = 0.7) + 
   labs(title = "C2", x = "", y = "") + 
-  scale_y_continuous(limits = c(1.5, 6.75), breaks = seq(1.5, 6.75, 1), position = "top") +
+  scale_y_continuous(limits = c(1.5, 6.75), 
+                     breaks = seq(1.5, 6.75, 1), position = "top") +
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
 
@@ -221,13 +230,16 @@ ggHistElev <- ggDatosRindeMaiz +
   labs(title = "", x = "Elevación (m)", y = "Frecuencia") + 
   scale_x_continuous(limits = c(241.5, 247.5), breaks = seq(240, 248, 1)) + 
   scale_y_continuous(limits = c(0, 275), breaks = seq(0, 275, 50)) + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.margin = unit(c( -1, 1, 1, 1), "mm"))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotElev <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$Elev, x = rep("EL", length(datosRindeMaiz$Elev))), 
+  geom_boxplot(aes(y = datosRindeMaiz$Elev, 
+                   x = rep("EL", length(datosRindeMaiz$Elev))), 
                fill = "darkred", col = "black", alpha = 0.7) + 
   labs(title = "", x = "", y = "") + 
-  scale_y_continuous(limits = c(241.5, 247.5), breaks = seq(240, 248, 1), position = "top") + 
+  scale_y_continuous(limits = c(241.5, 247.5), 
+                     breaks = seq(240, 248, 1), position = "top") + 
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) + 
   coord_flip()
 
@@ -291,7 +303,7 @@ ResumenEstadisticas <- function(df) {
   # Iteración que recorre todas las columnas del data.frame
   for(i in 1:ncol) {
     
-    # Condición de que la columna para las estadísticas tenga que ser de tipo numérica 
+    # Condición de que la columna para las estadísticas tenga que ser numérica 
     if(is.numeric(df[,i])) {
       
       mediana[i] = median(df[,i], na.rm = TRUE)
@@ -445,7 +457,7 @@ shapiro.test(ElevSqrt) # Probar normalidad de la transformación
 
 # Box-Cox
 lambdaElev <- BoxCox.lambda(x = datosRindeMaiz@data$Elev) # Hallar Lambda
-ElevBC <- BoxCox(x = datosRindeMaiz@data$Elev, lambda = lambdaElev) # Transf. vector
+ElevBC <- BoxCox(x = datosRindeMaiz@data$Elev, lambda = lambdaElev) # Transf.vector
 shapiro.test(ElevBC) # Probar normalidad de la transformación 
 
 # Transformar profundidad napa (C1)
@@ -667,7 +679,8 @@ grid.arrange(ggQQmaizC1, ggQQmaizC2, ggQQNapaDicC1, ggQQNapaDicC2, ggQQElev,
              ggQQNapaDicC2Sqrt, ggQQElevSqrt,ggQQmaizC1BC, ggQQmaizC2BC, 
              ggQQNapaDicC1BC, ggQQNapaDicC2BC, ggQQElevBC,
              ncol = 4, nrow = 5, 
-             layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
+             layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), 
+                                   c(11,12,13,14,15), c(16,17,18,19,20))
              )
 ```
 
@@ -950,26 +963,30 @@ En los correlogramas se observó una baja correlación espacial positiva hasta l
 # Plot correlograma 
 
 # Poligonos de tipos de correlación
-polyAutocorrPos <- data.frame("id" = rep("1", length(moranRendMaizC2$mean.of.class)/2),
-                              "x" = c(seq(0, max(moranRendMaizC2$mean.of.class),
-                                        length.out = length(moranRendMaizC2$mean.of.class)/2),
-                                        rev(seq(0, max(moranRendMaizC2$mean.of.class),
-                                                length.out = length(moranRendMaizC2$mean.of.class)/2))),
-                              "y" = c(rep(0,7), rep(1,7)))
+polyAutocorrPos <- data.frame(
+  "id" = rep("1", length(moranRendMaizC2$mean.of.class)/2),
+  "x" = c(seq(0, max(moranRendMaizC2$mean.of.class),
+              length.out = length(moranRendMaizC2$mean.of.class)/2),
+          rev(seq(0, max(moranRendMaizC2$mean.of.class),
+                  length.out = length(moranRendMaizC2$mean.of.class)/2))),
+  "y" = c(rep(0,7), rep(1,7)))
 
-polyAutocorrNeg <- data.frame("id" = rep("2", length(moranRendMaizC2$mean.of.class)/2),
-                              "x" = c(seq(0, max(moranRendMaizC2$mean.of.class),
-                                        length.out = length(moranRendMaizC2$mean.of.class)/2),
-                                        rev(seq(0, max(moranRendMaizC2$mean.of.class),
-                                                length.out = length(moranRendMaizC2$mean.of.class)/2))),
-                              "y" = c(rep(0,7), rep(-0.2,7)))
+polyAutocorrNeg <- data.frame(
+  "id" = rep("2", length(moranRendMaizC2$mean.of.class)/2),
+  "x" = c(seq(0, max(moranRendMaizC2$mean.of.class),
+              length.out = length(moranRendMaizC2$mean.of.class)/2),
+          rev(seq(0, max(moranRendMaizC2$mean.of.class),
+                  length.out = length(moranRendMaizC2$mean.of.class)/2))),
+  "y" = c(rep(0,7), rep(-0.2,7)))
 
 # Índice de Moran para el rendimiento de maíz - C1
 ggMoranRendMaizC1 <- ggplot(data.frame("intervalos" = moranRendMaizC1$mean.of.class,
                                        "correlación" = moranRendMaizC1$correlation)) +
-  geom_polygon(aes(x = polyAutocorrPos$x, y = polyAutocorrPos$y, group = polyAutocorrPos$id), 
+  geom_polygon(aes(x = polyAutocorrPos$x, y = polyAutocorrPos$y, 
+                   group = polyAutocorrPos$id), 
                    fill = "darkblue", alpha = 0.6) + 
-  geom_polygon(aes(x = polyAutocorrNeg$x, y = polyAutocorrNeg$y, group = polyAutocorrNeg$id), 
+  geom_polygon(aes(x = polyAutocorrNeg$x, y = polyAutocorrNeg$y, 
+                   group = polyAutocorrNeg$id), 
                    fill = "darkred", alpha = 0.6) + 
   geom_point(aes(x = intervalos, y = correlación), size = 3) +
   geom_line(aes(x = intervalos, y = correlación)) + 
@@ -984,9 +1001,11 @@ ggMoranRendMaizC1 <- ggplot(data.frame("intervalos" = moranRendMaizC1$mean.of.cl
 # Índice de Moran para el rendimiento de maíz - C2
 ggMoranRendMaizC2 <- ggplot(data.frame("intervalos" = moranRendMaizC2$mean.of.class,
                                        "correlación" = moranRendMaizC2$correlation)) +
-  geom_polygon(aes(x = polyAutocorrPos$x, y = polyAutocorrPos$y, group = polyAutocorrPos$id), 
+  geom_polygon(aes(x = polyAutocorrPos$x, y = polyAutocorrPos$y, 
+                   group = polyAutocorrPos$id), 
                    fill = "darkblue", alpha = 0.6) + 
-  geom_polygon(aes(x = polyAutocorrNeg$x, y = polyAutocorrNeg$y, group = polyAutocorrNeg$id), 
+  geom_polygon(aes(x = polyAutocorrNeg$x, y = polyAutocorrNeg$y, 
+                   group = polyAutocorrNeg$id), 
                    fill = "darkred", alpha = 0.6) + 
   geom_point(aes(x = intervalos, y = correlación), size = 3) +
   geom_line(aes(x = intervalos, y = correlación)) + 
@@ -1082,18 +1101,22 @@ Se definió considerar como valores atípicos aquellos puntos con una distancia 
 umbralCook <- 4/nrow(datosRindeMaiz)
 
 # Outliers
-outliersC1 <- as.numeric(names(which(moranPlotC1$infmat[ptosInfC1,"cook.d"] > umbralCook)))
-outliersC2 <- as.numeric(names(which(moranPlotC2$infmat[ptosInfC2,"cook.d"] > umbralCook)))
+outliersC1 <- as.numeric(names(which(moranPlotC1$infmat[ptosInfC1,"cook.d"]>umbralCook)))
+outliersC2 <- as.numeric(names(which(moranPlotC2$infmat[ptosInfC2,"cook.d"]>umbralCook)))
 
 # Agregar valores sin outliers
 datosRindeMaiz$ajusteC1.M1.SinOut <- NA
-datosRindeMaiz$ajusteC1.M1.SinOut[-outliersC1] <- datosRindeMaiz$ajusteC1.M1[-outliersC1]
+datosRindeMaiz$ajusteC1.M1.SinOut[-outliersC1] <- 
+  datosRindeMaiz$ajusteC1.M1[-outliersC1]
 datosRindeMaiz$resAjusteC1.M1.SinOut <- NA
-datosRindeMaiz$resAjusteC1.M1.SinOut[-outliersC1] <- datosRindeMaiz$resAjusteC1.M1[-outliersC1]
+datosRindeMaiz$resAjusteC1.M1.SinOut[-outliersC1] <- 
+  datosRindeMaiz$resAjusteC1.M1[-outliersC1]
 datosRindeMaiz$ajusteC2.M1.SinOut <- NA
-datosRindeMaiz$ajusteC2.M1.SinOut[-outliersC2] <- datosRindeMaiz$ajusteC2.M1[-outliersC2]
+datosRindeMaiz$ajusteC2.M1.SinOut[-outliersC2] <- 
+  datosRindeMaiz$ajusteC2.M1[-outliersC2]
 datosRindeMaiz$resAjusteC2.M1.SinOut <- NA
-datosRindeMaiz$resAjusteC2.M1.SinOut[-outliersC2] <- datosRindeMaiz$resAjusteC2.M1[-outliersC2]
+datosRindeMaiz$resAjusteC2.M1.SinOut[-outliersC2] <- 
+  datosRindeMaiz$resAjusteC2.M1[-outliersC2]
 
 ```
 
@@ -1120,19 +1143,22 @@ Para observar los cambios en la media dentro del lote se realizaron mapas de pun
 ```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
 # Mapa de puntos de rendimiento de maíz para el lote
-spplot(obj = datosRindeMaiz, zcol = c("maizC1", "maizC2"), main = "Rendimiento de maíz (t/ha)", colorkey = TRUE)
+spplot(obj = datosRindeMaiz, zcol = c("maizC1", "maizC2"), 
+       main = "Rendimiento de maíz (t/ha)", colorkey = TRUE)
 
 ```
 
 ```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 # Mapa de puntos de la profundidad de la napa para el lote
-spplot(obj = datosRindeMaiz, zcol = c("NapaDicC1", "NapaDicC2"), main = "Profundidad napa (m)", colorkey = TRUE)
+spplot(obj = datosRindeMaiz, zcol = c("NapaDicC1", "NapaDicC2"), 
+       main = "Profundidad napa (m)", colorkey = TRUE)
 
 ```
 
 ```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
 # Mapa de puntos de la elevación del lote
-spplot(obj = datosRindeMaiz, zcol = "Elev", main = "Elevación (m)", colorkey = TRUE)
+spplot(obj = datosRindeMaiz, zcol = "Elev",
+       main = "Elevación (m)", colorkey = TRUE)
 
 ```
 
@@ -1170,8 +1196,10 @@ dfC1 <- dfC1[-c(NAs, outliersC1),]
 dfC2 <- dfC2[-outliersC2,]
 
 # Objetos geodata
-geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 5, covar.col = c(3,4))
-geodataC2 <- as.geodata(obj = dfC2, coords.col = 1:2, data.col = 5, covar.col = c(3,4))
+geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 5, 
+                        covar.col = c(3,4))
+geodataC2 <- as.geodata(obj = dfC2, coords.col = 1:2, data.col = 5, 
+                        covar.col = c(3,4))
 
 # Crear variograma empírico con el modelo de tendencia elegido
 varGeoC1 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
@@ -1181,8 +1209,10 @@ varGeoC2 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodata
 
 # Plot variogramas empíricos
 par(mfrow = c(1,2))
-plot(varGeoC1, pch = 19, col = "#0080FF", ylab = "semivarianza", xlab = "distancia", main = "C1")
-plot(varGeoC2, pch = 19, col = "#0080FF", ylab = "semivarianza", xlab = "distancia", main = "C2")
+plot(varGeoC1, pch = 19, col = "#0080FF", ylab = "semivarianza", 
+     xlab = "distancia", main = "C1")
+plot(varGeoC2, pch = 19, col = "#0080FF", ylab = "semivarianza", 
+     xlab = "distancia", main = "C2")
 par(mfrow = c(1,1))
 
 ```
@@ -1192,7 +1222,9 @@ par(mfrow = c(1,1))
 
 # Con librería gstat:
 
-# Nota: se utiliza la fórmula "maizC1 ~ NapaDicC1 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC1.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
+# Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el 
+# modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' 
+# guardada también en el set de datos de datosRindeMaiz.
 
 # Crear variograma empírico omnidireccional - C1
 varOmniC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
@@ -1209,7 +1241,9 @@ plot(varOmniC1, xlab = "distancia", ylab = "semivarianza",
 
 # Con librería gstat:
 
-# Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
+# Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el 
+# modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' 
+# guardada también en el set de datos de datosRindeMaiz.
 
 # Crear variograma empírico omnidireccional - C2
 varOmniC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
@@ -1340,7 +1374,7 @@ La dependencia espacial no difiere entre campañas, ya que la distancia ($h$) a 
 
 Se ajustaron los modelos *esférico*, *exponencial* y *circular* a los variogramas empíricos obtenidos para cada una de las campañas mediante estimación de parámetros por el método de *Máxima versoimilitud restringida (REML)*. Se utilizó para ello la librería `geoR` debido a que presenta la función `likfit` que permite estimar los parámetros necesarios (*rango*, *meseta* y *pepita*) para ajustar un modelo de variograma teórico al variograma empírico y seguir un criterio cuantitativo para seleccionar el mejor modelo. La librería `gstat` posee la función `fit.variogram.reml` que cumple con lo anterior pero solo estima el *rango*. También se probó la función `fit.variogram.gls` pero no es eficaz para muchos datos y requería de un muestreo aleatorio (trabajar con una submuestra) sobre los datos originales. 
 
-```{r, fig.height=6, fig.width=10, message=TRUE, warning=FALSE}
+```{r, fig.height=6, fig.width=8, message=TRUE, warning=FALSE}
 
 load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
 
@@ -1415,7 +1449,7 @@ print(AICmodelosC1)
 
 ```
 
-```{r, fig.height=8, fig.width=10, message=TRUE, warning=FALSE}
+```{r, fig.height=6, fig.width=8, message=TRUE, warning=FALSE}
 
 # Matriz de posibles parámetros iniciales de rango y meseta para C1
 iniCovParsC2 <- cbind("sigma" = seq(0.5,1,length.out = 20),
@@ -1485,6 +1519,8 @@ print(AICmodelosC2)
 
 ```
 
+Para las dos campañas, el mejor ajuste del modelo de variograma teórico a los datos fue para el *Exponencial*. Se eligió dicho modelo debido a que el que presentó el $AIC$ más bajo ($AIC_{C1} = 1317.886$ y $AIC_{C2} = 979.6216$) comparando en cada caso frente a los modelos *Esférico* ($AIC_{C1} = 1331.098$ y $AIC_{C2} = 994.0059$) y *Circular* ($AIC_{C1} = 1359.595$ y $AIC_{C2} = 1024.4368$).
+
 ```{r, fig.height=6, fig.width=12, message=TRUE, warning=FALSE}
 
 varMejorTeoC1 <- vgm(psill = likfitVarGeoC1.exp$sigmasq, 
@@ -1525,7 +1561,7 @@ par(mfrow = c(1,1))
 
 Para obtener una grilla de predicción de la mitad de fina que la originalmente provista, se utilizó una grilla de con un tamaño de celda de la mitad ($10 m$) que los datos originales ($20 m$) para realizar el *Kriging Ordinario Puntual*. Además se ajustó la extensión de la grilla de predicción para que ajustara a la original. Para obtener un tamaño de bloque que agrupó al menos nueve observaciones originales (teniendo en cuenta que los puntos originales están separados $20 m$ entre si), se utilizó un tamaño de bloque de $60 m * 60 m$ para realizar el *Kriging en Bloque*.
 
-```{r}
+```{r, fig.height=6, fig.width=10, message=TRUE, warning=FALSE}
 
 # Crear nuevo borde
 bb <- matrix(data = c(bbox(datosRindeMaiz)["Long","min"],
@@ -1545,10 +1581,16 @@ puntosPredecir <- spsample(x = datosRindeMaiz,
                            offset = c(0,0))
 
 # Mostrar grilla 
-plot(datosRindeMaiz[505:510,], cex = 0)
+par(mfrow = c(1,2))
+plot(datosRindeMaiz[,], cex = 0, main = "Todos")
 plot(datosRindeMaiz, pch = 19, cex =1.5, add = TRUE)
 plot(puntosPredecir, pch = 19, col = "green", cex = 0.8, add = TRUE)
 box()
+plot(datosRindeMaiz[505:510,], cex = 0, main = "Detalle")
+plot(datosRindeMaiz, pch = 19, cex =1.5, add = TRUE)
+plot(puntosPredecir, pch = 19, col = "green", cex = 0.8, add = TRUE)
+box()
+par(mfrow = c(1,1))
 
 ```
 
@@ -1663,7 +1705,7 @@ spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var
 
 Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que para la C1. Sin embargo, se observó una buena predicción para las dos campañas como resumen los indicadores según el valor esperado en la tabla a continuación.
 
-```{r, fig.height=8, fig.width=12, message=TRUE, warning=FALSE}
+```{r, fig.height=10, fig.width=12, message=TRUE, warning=FALSE}
 
 # Validación cruzada mediante partición de los datos en 1000 partes.
 # Las predicicones estarán basadas en las restantes N-1 partes para un conjunto 
@@ -1756,51 +1798,101 @@ vcResumen <- data.frame("Indicador" = c("Error.medio",
 
 > 6) A partir de los modelos lineales regionalizados definidos en el punto 4, realice 300 simulaciones del proceso estocástico mediante kriging puntual ordinario para cada campaña. Asumiendo que ambas campañas fueron similares en cuanto al régimen de lluvias y la dinámica del acuífero elabore un mapa probabilístico que muestre la probabilidad de obtener rindes mayores a 9500 kg.ha-1 integrando la información de ambas campañas. Justifique todas las decisiones necesarias para elaborar este mapa. ¿Cuál es la superficie de este lote que tiene una probabilidad igual o mayor a 0.8 de alcanzar o superar el rinde umbral establecido?
 
+## Simulaciones del proceso estocástico
+
+**Nota: ** Dado que para cada nodo visitado del set de datos el *algoritmo de simulación secuencial* simula un valor y este valor es agregado a los datos, el tiempo computacional requerido para realizar 300 simulaciones utilizando por defecto todos los puntos para cada nodo visitado es muy grande. Por eso se restringió a un radio de vecinos dado por todos los puntos encontrados a una distancia menor a $100 m$.
+
 ```{r}
 
-# Simulaciones del proceso estocástico
-
-# Tomar submuestra
-
-# Sacar outliers y NAs
-# subC1 <- datosRindeMaiz[-c(NAs, outliersC1),]
-# subC2 <- datosRindeMaiz[-outliersC2,]
-
-# Tomar submuestra aleatoria para simulación 
-# subMC1 <- subC1[which(subC1$ID %in% sample(subC1$ID, 500)),]
-# subMC2 <- subC2[which(subC2$ID %in% sample(subC2$ID, 500)),]
-
-# It does not model variograms on the way. It is slower than kriging
-# because it uses the sequential simulation algorithm: for each node
-# visited, a value is simulated, and this value is added to the
-# conditioning data. For this reason you _have to_ limit the search
-# neighbourhood (using the nmax or maxdist arguments) if you're
-# simulating on more than say a few hundred nodes. Taking a very
-# small nmax may yield fast simulations, at the expense of a good
-# representation of the target spatial correlation structure.
-
 # Interpolacion por Kriging Ordinario (KO)
-# system.time(BKSim.C1 <- krige(formula = maizC1 ~ 1, 
-#                   locations = datosRindeMaiz[-c(NAs,outliersC1),], 
-#                   newdata = puntosPredecir, 
-#                   model = varMejorTeoC1, nsim = 1))
 
-# Interpolacion por Kriging Ordinario (KO)
-# system.time(BKSim.C2 <- krige(formula = maizC2 ~ 1, 
-#                   locations = datosRindeMaiz[-outliersC2,], 
-#                   newdata = puntosPredecir, 
-#                   model = varMejorTeoC2, nsim = 10))
+if(length(which(ls() == "KOSim.C1")) == 0) {
+KOSim.C1 <- krige(formula = maizC1 ~ 1,
+                  locations = datosRindeMaiz[-c(NAs,outliersC1),],
+                  newdata = puntosPredecir,
+                  model = varMejorTeoC1,
+                  nsim = 300, maxdist = 100)
+}
 
+if(length(which(ls() == "KOSim.C2")) == 0) {
+KOSim.C2 <- krige(formula = maizC2 ~ 1,
+                  locations = datosRindeMaiz[-outliersC2,],
+                  newdata = puntosPredecir,
+                  model = varMejorTeoC2,
+                  nsim = 300, maxdist = 100)
+}
+
+```
+
+## Cálculo de probabilidad
+
+```{r}
 
 # Probabilidad de obtener rindes mayores a 9500 kg.ha-1 
-# probRindeC1 <- numeric()
-# 
-# for(i in 1:99) {
-# 
-#   prob[i] <- ifelse(test = BKSim.C1@data[i,] > 9.5, yes = 1/10, no = 0)
-#  # prob[i] <- which(BKSim.C1@data[i,] > 9.5) / 10)
-#   
-# }
+probRinde <- numeric()
+nroCeldas <- length(KOSim.C1$sim1)
+
+# Recorro los datos simulados
+for(i in 1:nroCeldas) {
+
+  # Vectores
+  C1Mayor <- length(which(KOSim.C1@data[i,] > 9.5))
+  C2Mayor <- length(which(KOSim.C2@data[i,] > 9.5))
+  
+  # Condiciones
+  ifelse(test = C1Mayor != 0, yes = probC1 <- C1Mayor/300, no = probC1 <- 0)
+  ifelse(test = C2Mayor != 0, yes = probC2 <- C2Mayor/300, no = probC2 <- 0)
+  
+  # Calcular probabilidad
+  probRinde[i] <- (probC1 + probC2) / 2
+  
+}
+
+# Crear objeto espacial
+probRindeMayor9500 <- SpatialPointsDataFrame(coords = KOSim.C1@coords, 
+                                             data = data.frame("ID" = 1:nrow(KOSim.C1@coords),
+                                                               "Prob" = probRinde))
+
+# Plot
+spplot(probRindeMayor9500, zcol = "Prob", colorkey = TRUE,
+       main = "Probabilidad Rindes > 9500 kg.ha-1")
+
+# Visualizar como grilla
+probRindeMayor9500.grid <- SpatialPixelsDataFrame(points = puntosPredecir, 
+                                        data = probRindeMayor9500@data)
+
+spplot(probRindeMayor9500.grid, main = "Probabilidad Rindes > 9500 kg.ha-1", 
+       zcol = "Prob", colorkey = TRUE)
+
+```
+
+## Cálculo de superficie
+
+La superficie estimada del lote que tiene una probabilidad igual o mayor a $0.8$ de alcanzar o superar el rinde umbral establecido fue de $88900 m^{2}$. Equivale a casi el $10\%$ ($9.82\%$) de la superficie total del lote. 
+
+```{r}
+
+# ¿Cuál es la superficie de este lote que tiene una probabilidad igual o mayor a 0.8 de alcanzar o superar el rinde umbral establecido?
+
+# Consulto grilla creada anteriormente
+mayorProbUmbral <- probRindeMayor9500.grid[which(probRindeMayor9500.grid$Prob >= 0.8),]
+probRindeMayor9500.grid
+
+# Tamaño de grilla:
+mayorProbUmbral@grid@cellsize #10 metros por 10 metros (doble resolución original)
+
+# Cálcular superficie
+areaCelda <- 10*10
+cantidadCeldasCumplenCondicion <- length(mayorProbUmbral$Prob)
+areaTotalCeldasCumplenCondicion <- cantidadCeldasCumplenCondicion * areaCelda
+
+# Calcular porcentaje del lote
+areaTotalLote <- length(probRindeMayor9500.grid$ID) * areaCelda
+porcentajeAreaTotalCeldasCumplenCondicion <- (areaTotalCeldasCumplenCondicion/areaTotalLote)*100
+
+# Plot
+spplot(mayorProbUmbral, zcol = "Prob", colorkey = TRUE,
+       main = "Probabilidad > 0.8")
 
 ```
 
