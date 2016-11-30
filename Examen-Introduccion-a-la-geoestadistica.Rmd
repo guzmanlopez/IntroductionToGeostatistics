@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
+  pdf_document:
+    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
-    toc: yes
-  pdf_document:
     toc: yes
 ---
 
@@ -1372,8 +1372,12 @@ La dependencia espacial no difiere entre campañas, ya que la distancia ($h$) a 
 
 Se ajustaron los modelos *esférico*, *exponencial* y *circular* a los variogramas empíricos obtenidos para cada una de las campañas mediante estimación de parámetros por el método de *Máxima versoimilitud restringida (REML)*. Se utilizó para ello la librería `geoR` debido a que presenta la función `likfit` que permite estimar los parámetros necesarios (*rango*, *meseta* y *pepita*) para ajustar un modelo de variograma teórico al variograma empírico y seguir un criterio cuantitativo para seleccionar el mejor modelo. La librería `gstat` posee la función `fit.variogram.reml` que cumple con lo anterior pero solo estima el *rango*. También se probó la función `fit.variogram.gls` pero no es eficaz para muchos datos y requería de un muestreo aleatorio (trabajar con una submuestra) sobre los datos originales. 
 
+Para el ajuste de los modelos se asumió que el efecto pepita o nugget fue cero y no se estimó este parámetro.
+
 ```{r, fig.height=6, fig.width=8, message=TRUE, warning=FALSE}
 
+# Se cargan los objetos previamente creados
+# para evitar hacer corridas muy demandantes de tiempo
 load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
 
 # Tomar muestra para el ajuste de 500 puntos
@@ -1555,6 +1559,8 @@ par(mfrow = c(1,1))
 
 > 4) Realice una interpolación para los datos de rinde de cada campaña mediante kriging ordinario puntual y kriging en bloque. Utilice una grilla de predicción hasta la mitad de fina que la originalmente provista para el kriging puntual y un tamaño de bloque que agrupe al menos nueve observaciones originales. Elabore para cada campaña tanto mapas del rinde de maíz predicho, como de la variabilidad de la predicción. Justifique todas las decisiones necesarias para realizar estas interpolaciones.  
 
+Los valores más altos de varianza en todas las predicciones se observaron para aquellos puntos cercanos o sobre celdas donde se eliminaron valores atípicos u outliers.
+
 ## Tamaño de la grilla y bloque 
 
 Para obtener una grilla de predicción de la mitad de fina que la originalmente provista, se utilizó una grilla de con un tamaño de celda de la mitad ($10 m$) que los datos originales ($20 m$) para realizar el *Kriging Ordinario Puntual*. Además se ajustó la extensión de la grilla de predicción para que ajustara a la original. Para obtener un tamaño de bloque que agrupó al menos nueve observaciones originales (teniendo en cuenta que los puntos originales están separados $20 m$ entre si), se utilizó un tamaño de bloque de $60 m * 60 m$ para realizar el *Kriging en Bloque*.
@@ -1700,7 +1706,7 @@ spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var
 
 ## Validación cruzada
 
-Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que para la C1. Sin embargo, se observó una buena predicción para las dos campañas como resumen los indicadores según el valor esperado en la tabla que se imprime más abajo.
+Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que para la C1. Para C1 se observaron valores de rinde bajos ($< 5t/ha$) que presentan diferencias importantes con los valores esperados. Sin embargo, se observó en general una buena predicción para las dos campañas como resumen algunos indicadores según el valor que se espera (ver tabla que se imprime más abajo).
 
 ```{r, fig.height=10, fig.width=12, message=TRUE, warning=FALSE}
 
@@ -1804,6 +1810,7 @@ vcResumen <- data.frame("Indicador" = c("Error.medio",
 # Interpolacion por Kriging Ordinario (KO)
 
 if(length(which(ls() == "KOSim.C1")) == 0) {
+  
 KOSim.C1 <- krige(formula = maizC1 ~ 1,
                   locations = datosRindeMaiz[-c(NAs,outliersC1),],
                   newdata = puntosPredecir,
@@ -1812,6 +1819,7 @@ KOSim.C1 <- krige(formula = maizC1 ~ 1,
 }
 
 if(length(which(ls() == "KOSim.C2")) == 0) {
+  
 KOSim.C2 <- krige(formula = maizC2 ~ 1,
                   locations = datosRindeMaiz[-outliersC2,],
                   newdata = puntosPredecir,
@@ -1824,6 +1832,8 @@ KOSim.C2 <- krige(formula = maizC2 ~ 1,
 ## Cálculo de probabilidad
 
 ```{r}
+
+if(length(which(ls() == "probRinde")) == 0) {
 
 # Probabilidad de obtener rindes mayores a 9500 kg.ha-1 
 probRinde <- numeric()
@@ -1843,6 +1853,7 @@ for(i in 1:nroCeldas) {
   # Calcular probabilidad
   probRinde[i] <- (probC1 + probC2) / 2
   
+}
 }
 
 # Crear objeto espacial
@@ -1870,11 +1881,10 @@ La superficie estimada del lote que tiene una probabilidad igual o mayor a $0.8$
 ```{r}
 
 # Consulto grilla creada anteriormente
-mayorProbUmbral <- probRindeMayor9500.grid[which(probRindeMayor9500.grid$Prob >= 0.8),]
-probRindeMayor9500.grid
+mayorProbUmbral <- probRindeMayor9500.grid[which(probRindeMayor9500.grid$Prob>=0.8),]
 
 # Tamaño de grilla:
-mayorProbUmbral@grid@cellsize #10 metros por 10 metros
+mayorProbUmbral@grid@cellsize # 10 metros por 10 metros
 
 # Cálcular superficie
 areaCelda <- 10*10
