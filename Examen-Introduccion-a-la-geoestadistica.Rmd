@@ -1627,33 +1627,88 @@ spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var
 
 ## Validación cruzada
 
+Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que para la C1. Sin embargo, se observó una buena predicción para las dos campañas como resumen los indicadores según el valor esperado en la tabla a continuación.
+
 ```{r}
 
-# Validación cruzada mediante el método "leave-one-out"
+# Validación cruzada mediante partición de los datos en 1000 partes.
+# Las predicicones estarán basadas en las restantes N-1 partes para un conjunto 
+# de onservaciones de la parte N.
+
 vcOK.C1 <- krige.cv(formula = maizC1~1,
                     model = varMejorTeoC1,
                     locations = datosRindeMaiz[-c(NAs,outliersC1),],
-                    nfold = nrow(datosRindeMaiz[-c(NAs,outliersC1),]))
+                    nfold = 1000)
 
 vcOK.C2 <- krige.cv(formula = maizC2~1,
                     model = varMejorTeoC2,
                     locations = datosRindeMaiz[-outliersC2,],
-                    nfold = nrow(datosRindeMaiz[-outliersC2,]))
+                    nfold = 1000)
 
-# Plot validación cruzada
-spplot(vcOK.C1, zcol = "var1.pred")
-spplot(vcOK.C2, zcol = "var1.pred")
+# Analizar validación cruzada
+par(mfrow = c(2,2))
 
-# Visualizar como grilla
-vcOK.C1.grid <- SpatialPixelsDataFrame(points = vcOK.C1,
-                                       data = vcOK.C1@data)
-vcOK.C2.grid <- SpatialPixelsDataFrame(points = vcOK.C2,
-                                       data = vcOK.C2@data)
+plot(x = vcOK.C1$observed, 
+     y = vcOK.C1$observed - vcOK.C1$residual,
+     xlab = "observados",
+     ylab = "observados - residuales",
+     main = "C1")
+lines(x = 0:20, y = 0:20, col = "red")
 
-spplot(vcOK.C1.grid, main = "Validación cruzada C1", zcol = "var1.pred")
-spplot(vcOK.C2.grid, main = "Validación cruzada C2", zcol = "var1.pred")
+plot(x = vcOK.C2$observed, 
+     y = vcOK.C2$observed - vcOK.C2$residual,
+     xlab = "observados",
+     ylab = "observados - residuales",
+     main = "C2")
+lines(x = 0:20, y = 0:20, col = "red")
 
-# Resultados sumarios
+plot(x = vcOK.C1$observed, 
+     y = vcOK.C1$residual,
+     xlab = "observados",
+     ylab = "residuales",
+     main = "C1")
+lines(x = 0:19, y = rep(0,20), col = "red")
+
+plot(x = vcOK.C2$observed, 
+     y = vcOK.C2$residual,
+     xlab = "observados",
+     ylab = "residuales",
+     main = "C2")
+lines(x = 0:19, y = rep(0,20), col = "red")
+
+par(mfrow = c(1,1))
+
+# Calcular RMSE para toda el área
+rmse <- function(error) {
+  sqrt(mean(error^2))
+}
+
+# Observados - predicho
+RMSE.C1 <- rmse(vcOK.C1$residual)
+RMSE.C2 <- rmse(vcOK.C2$residual)
+
+# Tabla de resultados sumarios
+vcResumen <- data.frame("Indicador" = c("Error.medio", 
+                                       "Error.medio.cuadrático",
+                                       "Error.medio.cuadrático.normalizado",
+                                       "Correlación.obsVSpred",
+                                       "Correlación.predVSresiduales",
+                                       "RMSE"),
+                         "ValorC1" = c(mean(vcOK.C1$residual), 
+                                      mean(vcOK.C1$residual^2),
+                                      mean(vcOK.C1$zscore^2),
+                                      cor(vcOK.C1$observed, vcOK.C1$observed - vcOK.C1$residual),
+                                      cor(vcOK.C1$observed - vcOK.C1$residual, vcOK.C1$residual),
+                                      RMSE.C1),
+                         "ValorC2" = c(mean(vcOK.C2$residual), 
+                                      mean(vcOK.C2$residual^2),
+                                      mean(vcOK.C2$zscore^2),
+                                      cor(vcOK.C2$observed, vcOK.C2$observed - vcOK.C2$residual),
+                                      cor(vcOK.C2$observed - vcOK.C2$residual, vcOK.C2$residual),
+                                      RMSE.C2),
+                         "Ideal" = c("0","0","1","1", "0", "0"))
+# Ver
+(vcResumen)
 
 ```
 
@@ -1664,16 +1719,20 @@ spplot(vcOK.C2.grid, main = "Validación cruzada C2", zcol = "var1.pred")
 ```{r}
 
 # Probabilidad de obtener rindes mayores a 9500 kg.ha-1 
-ca.bk.sim <- krige(formula = ca ~ 1, locations = ca20SPDF, newdata = newdataCaChica, model = varioCaFit, block = c(100,100), nsim = 10)
+BKSim.C1 <- krige(formula = maizC1 ~ 1, 
+                  locations = datosRindeMaiz[-c(NAs, outliersC1),], 
+                  newdata = puntosPredecir, 
+                  model = varMejorTeoC1, 
+                  block = c(60,60), nsim = 10)
 
-# Hacer consulta para valores mayores a 60 de Ca
-# Para cada punto la probabilidad de que sea > 60
+probRindeC1 <- numeric()
 
-prob <- numeric()
+
 
 for(i in 1:99) {
 
- prob[i] <- which(ca.bk.sim@data[i,] > 60) / 10)
+  prob[i] <- ifelse(test = BKSim.C1@data[i,] > 9.5, yes = 1/10, no = 0)
+ # prob[i] <- which(BKSim.C1@data[i,] > 9.5) / 10)
   
 }
 
