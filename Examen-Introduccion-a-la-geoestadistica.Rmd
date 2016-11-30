@@ -1169,10 +1169,6 @@ dfC2 <- data.frame(as.data.frame(datosRindeMaiz@coords),
 dfC1 <- dfC1[-c(NAs, outliersC1),]
 dfC2 <- dfC2[-outliersC2,]
 
-# Tomar muestra para fit variogram
-dfC1 <- dfC1[sample(as.numeric(rownames(dfC1)), 500),]
-dfC2 <- dfC2[sample(as.numeric(rownames(dfC2)), 500),]
-
 # Objetos geodata
 geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 5, covar.col = c(3,4))
 geodataC2 <- as.geodata(obj = dfC2, coords.col = 1:2, data.col = 5, covar.col = c(3,4))
@@ -1344,9 +1340,13 @@ La dependencia espacial no difiere entre campañas, ya que la distancia ($h$) a 
 
 Se ajustaron los modelos *esférico*, *exponencial* y *circular* a los variogramas empíricos obtenidos para cada una de las campañas mediante estimación de parámetros por el método de *Máxima versoimilitud restringida (REML)*. Se utilizó para ello la librería `geoR` debido a que presenta la función `likfit` que permite estimar los parámetros necesarios (*rango*, *meseta* y *pepita*) para ajustar un modelo de variograma teórico al variograma empírico y seguir un criterio cuantitativo para seleccionar el mejor modelo. La librería `gstat` posee la función `fit.variogram.reml` que cumple con lo anterior pero solo estima el *rango*. También se probó la función `fit.variogram.gls` pero no es eficaz para muchos datos y requería de un muestreo aleatorio (trabajar con una submuestra) sobre los datos originales. 
 
-```{r}
+```{r,fig.height=8, fig.width=8, message=TRUE, warning=FALSE}
 
 load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
+
+# Tomar muestra para el ajuste de 500 puntos
+geodataC1 <- sample.geodata(geodataC1, size = 500, replace = FALSE)
+geodataC2 <- sample.geodata(geodataC2, size = 500, replace = FALSE)
 
 # Matriz de posibles parámetros iniciales de rango y meseta para C1
 iniCovParsC1 <- cbind("sigma" = seq(1,3,length.out = 20),
@@ -1354,7 +1354,9 @@ iniCovParsC1 <- cbind("sigma" = seq(1,3,length.out = 20),
 
 iniCovParsC1 <- as.matrix(iniCovParsC1) # convertir a matriz
 
-# Ajuste modelo esférico
+if(length(which(ls() == "likfitVarGeoC1.sph")) == 0) {
+  
+  # Ajuste modelo esférico
 likfitVarGeoC1.sph <- likfit(geodataC1,
                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
                              ini.cov.pars = iniCovParsC1,
@@ -1362,8 +1364,11 @@ likfitVarGeoC1.sph <- likfit(geodataC1,
                              fix.nugget = FALSE,
                              cov.model = "spherical",
                              lik.method = "REML")
+}
 
-# Ajuste modelo exponencial
+if(length(which(ls() == "likfitVarGeoC1.exp")) == 0) {
+  
+  # Ajuste modelo exponencial
 likfitVarGeoC1.exp <- likfit(geodataC1,
                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
                              ini.cov.pars = iniCovParsC1,
@@ -1372,8 +1377,12 @@ likfitVarGeoC1.exp <- likfit(geodataC1,
                              nugget = 0,
                              cov.model = "exponential",
                              lik.method = "REML")
+  
+}
 
-# Ajuste modelo circular
+if(length(which(ls() == "likfitVarGeoC1.cir")) == 0) {
+  
+  # Ajuste modelo circular
 likfitVarGeoC1.cir <- likfit(geodataC1,
                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
                              ini.cov.pars = iniCovParsC1,
@@ -1382,6 +1391,7 @@ likfitVarGeoC1.cir <- likfit(geodataC1,
                              nugget = 0,
                              cov.model = "circular",
                              lik.method = "REML")
+}
 
 # Plot variograma empírico + modelos
 plot(varGeoC1, main = "C1", ylab = "semivarianza", 
@@ -1407,13 +1417,13 @@ print(AICmodelosC1)
 
 ```{r}
 
-load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
-
 # Matriz de posibles parámetros iniciales de rango y meseta para C1
 iniCovParsC2 <- cbind("sigma" = seq(0.5,1,length.out = 20),
                       "phi" = seq(100,300,length.out = 20))
 
 iniCovParsC2 <- as.matrix(iniCovParsC2) # convertir a matriz
+
+if(length(which(ls() == "likfitVarGeoC2.sph")) == 0) {
 
 # Ajuste modelo esférico
 likfitVarGeoC2.sph <- likfit(geodataC2,
@@ -1424,8 +1434,11 @@ likfitVarGeoC2.sph <- likfit(geodataC2,
                              nugget = 0,
                              cov.model = "spherical",
                              lik.method = "REML")
+}
 
-# Ajuste modelo exponencial
+if(length(which(ls() == "likfitVarGeoC2.exp")) == 0) {
+  
+  # Ajuste modelo exponencial
 likfitVarGeoC2.exp <- likfit(geodataC2,
                              trend = trend.spatial(data~NapaDicC2+Elev, geodataC2),
                              ini.cov.pars = iniCovParsC2,
@@ -1434,6 +1447,10 @@ likfitVarGeoC2.exp <- likfit(geodataC2,
                              nugget = 0,
                              cov.model = "exponential",
                              lik.method = "REML")
+  
+}
+
+if(length(which(ls() == "likfitVarGeoC2.cir")) == 0) {
 
 # Ajuste modelo circular
 likfitVarGeoC2.cir <- likfit(geodataC2,
@@ -1444,6 +1461,7 @@ likfitVarGeoC2.cir <- likfit(geodataC2,
                              nugget = 0,
                              cov.model = "circular",
                              lik.method = "REML")
+}
 
 # Plot variograma empírico + modelos
 plot(varGeoC2, main = "C2", ylab = "semivarianza", 
@@ -1467,9 +1485,7 @@ print(AICmodelosC2)
 
 ```
 
-
-
-```{r}
+```{r, fig.height=8, fig.width=12, message=TRUE, warning=FALSE}
 
 varMejorTeoC1 <- vgm(psill = likfitVarGeoC1.exp$sigmasq, 
                      model = "Exp", 
@@ -1480,6 +1496,8 @@ varMejorTeoC2 <- vgm(psill = likfitVarGeoC2.exp$sigmasq,
                      model = "Exp", 
                      range = likfitVarGeoC2.exp$phi,
                      nugget = 0)
+
+par(mfrow = c(1,2))
 
 # Plotear variograma experimental y ajuste modelo teórico - C1
 plot(x = varOmniC1$dist, y = varOmniC1$gamma, main = "Modelos - C1",
@@ -1494,6 +1512,8 @@ plot(x = varOmniC2$dist, y = varOmniC2$gamma, main = "Modelos - C2",
      ylim = c(0, 1.2), pch = 19)
 lines(variogramLine(object = varMejorTeoC2, maxdist = 500), col = "red", lwd = 1, lty = 1)
 legend("topleft", c("Exponencial"), lty = 1, col = "red")
+
+par(mfrow = c(1,1))
 
 ```
 
@@ -1535,11 +1555,15 @@ plot(puntosPredecir, pch = 19, col = "green", cex = 0.5, add = TRUE)
 
 ```{r}
 
+if(length(which(ls() == "intOK.C1")) == 0) {
+  
 # Interpolacion por Kriging Ordinario (KO)
 intOK.C1 <- krige(formula = maizC1 ~ 1, 
                   locations = datosRindeMaiz[-c(NAs, outliersC1),],
                   newdata = puntosPredecir,
                   model = varMejorTeoC1)
+
+}
 
 # Predicho
 spplot(intOK.C1, zcol = "var1.pred")
@@ -1556,11 +1580,14 @@ spplot(intOK.C1.grid, main = "Kriging Ordinario C1 - varianza", zcol = "var1.var
 
 ```{r}
 
+if(length(which(ls() == "intOK.C2")) == 0) {
+
 # Interpolacion por Kriging Ordinario (KO)
 intOK.C2 <- krige(formula = maizC2 ~ 1, 
                   locations = datosRindeMaiz[-outliersC2,],
                   newdata = puntosPredecir,
                   model = varMejorTeoC2)
+}
 
 # Predicho
 spplot(intOK.C2, zcol = "var1.pred")
@@ -1579,12 +1606,15 @@ spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - varianza", zcol = "var1.var
 
 ```{r}
 
+if(length(which(ls() == "intBK.C1")) == 0) {
+
 # Interpolacion por Kriging en Bloque (BK)
 intBK.C1 <- krige(formula = maizC1 ~ 1, 
                   locations = datosRindeMaiz[-c(NAs, outliersC1),],
                   newdata = puntosPredecir,
                   model = varMejorTeoC1, 
                   block = c(60,60))
+}
 
 # Predicho
 spplot(intBK.C1, zcol = "var1.pred")
@@ -1601,12 +1631,15 @@ spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - varianza", zcol = "var1.var
 
 ```{r}
 
+if(length(which(ls() == "intBK.C2")) == 0) {
+
 # Interpolacion por Kriging en Bloque (BK)
 intBK.C2 <- krige(formula = maizC2 ~ 1, 
                   locations = datosRindeMaiz[-outliersC2,],
                   newdata = puntosPredecir,
                   model = varMejorTeoC2, 
                   block = c(60,60))
+}
 
 # Predicho
 spplot(intBK.C2, zcol = "var1.pred")
@@ -1635,6 +1668,8 @@ Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que
 # Las predicicones estarán basadas en las restantes N-1 partes para un conjunto 
 # de onservaciones de la parte N.
 
+if(length(which(ls() == "vcOK.C1")) == 0 || length(which(ls() == "vcOK.C2")) == 0) {
+
 vcOK.C1 <- krige.cv(formula = maizC1~1,
                     model = varMejorTeoC1,
                     locations = datosRindeMaiz[-c(NAs,outliersC1),],
@@ -1644,6 +1679,7 @@ vcOK.C2 <- krige.cv(formula = maizC2~1,
                     model = varMejorTeoC2,
                     locations = datosRindeMaiz[-outliersC2,],
                     nfold = 1000)
+}
 
 # Analizar validación cruzada
 par(mfrow = c(2,2))
@@ -1718,24 +1754,49 @@ vcResumen <- data.frame("Indicador" = c("Error.medio",
 
 ```{r}
 
+# Simulaciones del proceso estocástico
+
+# Tomar submuestra
+
+# Sacar outliers y NAs
+# subC1 <- datosRindeMaiz[-c(NAs, outliersC1),]
+# subC2 <- datosRindeMaiz[-outliersC2,]
+
+# Tomar submuestra aleatoria para simulación 
+# subMC1 <- subC1[which(subC1$ID %in% sample(subC1$ID, 500)),]
+# subMC2 <- subC2[which(subC2$ID %in% sample(subC2$ID, 500)),]
+
+# It does not model variograms on the way. It is slower than kriging
+# because it uses the sequential simulation algorithm: for each node
+# visited, a value is simulated, and this value is added to the
+# conditioning data. For this reason you _have to_ limit the search
+# neighbourhood (using the nmax or maxdist arguments) if you're
+# simulating on more than say a few hundred nodes. Taking a very
+# small nmax may yield fast simulations, at the expense of a good
+# representation of the target spatial correlation structure.
+
+# Interpolacion por Kriging Ordinario (KO)
+# system.time(BKSim.C1 <- krige(formula = maizC1 ~ 1, 
+#                   locations = datosRindeMaiz[-c(NAs,outliersC1),], 
+#                   newdata = puntosPredecir, 
+#                   model = varMejorTeoC1, nsim = 1))
+
+# Interpolacion por Kriging Ordinario (KO)
+# system.time(BKSim.C2 <- krige(formula = maizC2 ~ 1, 
+#                   locations = datosRindeMaiz[-outliersC2,], 
+#                   newdata = puntosPredecir, 
+#                   model = varMejorTeoC2, nsim = 10))
+
+
 # Probabilidad de obtener rindes mayores a 9500 kg.ha-1 
-BKSim.C1 <- krige(formula = maizC1 ~ 1, 
-                  locations = datosRindeMaiz[-c(NAs, outliersC1),], 
-                  newdata = puntosPredecir, 
-                  model = varMejorTeoC1, 
-                  block = c(60,60), nsim = 10)
-
-probRindeC1 <- numeric()
-
-
-
-for(i in 1:99) {
-
-  prob[i] <- ifelse(test = BKSim.C1@data[i,] > 9.5, yes = 1/10, no = 0)
- # prob[i] <- which(BKSim.C1@data[i,] > 9.5) / 10)
-  
-}
-
+# probRindeC1 <- numeric()
+# 
+# for(i in 1:99) {
+# 
+#   prob[i] <- ifelse(test = BKSim.C1@data[i,] > 9.5, yes = 1/10, no = 0)
+#  # prob[i] <- which(BKSim.C1@data[i,] > 9.5) / 10)
+#   
+# }
 
 ```
 
