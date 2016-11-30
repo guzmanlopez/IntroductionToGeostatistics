@@ -1518,16 +1518,16 @@ colnames(bb) <- c("min", "max")
 rownames(bb) <- c("Long", "Lat")
 
 # Definir grilla donde predecir valores
-puntosPredecirC1 <- spsample(x = datosRindeMaiz,
-                             type = "regular",
-                             bb = bb,
-                             cellsize = 10, 
-                             offset = c(0,0))
+puntosPredecir <- spsample(x = datosRindeMaiz,
+                           type = "regular",
+                           bb = bb,
+                           cellsize = 10, 
+                           offset = c(0,0))
 
 # Mostrar grilla 
 plot(datosRindeMaiz[500:510,], cex = 0)
 plot(datosRindeMaiz, pch = 19, add = TRUE)
-plot(puntosPredecirC1, pch = 19, col = "green", cex = 0.5, add = TRUE)
+plot(puntosPredecir, pch = 19, col = "green", cex = 0.5, add = TRUE)
 
 ```
 
@@ -1538,7 +1538,7 @@ plot(puntosPredecirC1, pch = 19, col = "green", cex = 0.5, add = TRUE)
 # Interpolacion por Kriging Ordinario (KO)
 intOK.C1 <- krige(formula = maizC1 ~ 1, 
                   locations = datosRindeMaiz[-c(NAs, outliersC1),],
-                  newdata = puntosPredecirC1,
+                  newdata = puntosPredecir,
                   model = varMejorTeoC1)
 
 # Predicho
@@ -1546,23 +1546,20 @@ spplot(intOK.C1, zcol = "var1.pred")
 spplot(intOK.C1, zcol = "var1.var")
 
 # Visualizar como grilla
-intOK.C1.grid <- SpatialPixelsDataFrame(points = puntosPredecirC1, 
+intOK.C1.grid <- SpatialPixelsDataFrame(points = puntosPredecir, 
                                         data = intOK.C1@data)
 
-spplot(intOK.C1.grid, main = "Kriging Ordinario C1 - valores pred", zcol = "var1.pred")
+spplot(intOK.C1.grid, main = "Kriging Ordinario C1 - predicción", zcol = "var1.pred")
 spplot(intOK.C1.grid, main = "Kriging Ordinario C1 - varianza", zcol = "var1.var")
 
 ```
 
 ```{r}
 
-# Definir grilla donde predecir valores
-puntosPredecirC2 <- spsample(x = datosRindeMaiz, type = "regular", n = nrow(datosRindeMaiz)*2)
-
 # Interpolacion por Kriging Ordinario (KO)
 intOK.C2 <- krige(formula = maizC2 ~ 1, 
                   locations = datosRindeMaiz[-outliersC2,],
-                  newdata = puntosPredecirC2,
+                  newdata = puntosPredecir,
                   model = varMejorTeoC2)
 
 # Predicho
@@ -1570,10 +1567,10 @@ spplot(intOK.C2, zcol = "var1.pred")
 spplot(intOK.C2, zcol = "var1.var")
 
 # Visualizar como grilla
-intOK.C2.grid <- SpatialPixelsDataFrame(points = puntosPredecirC2, 
+intOK.C2.grid <- SpatialPixelsDataFrame(points = puntosPredecir, 
                                         data = intOK.C2@data)
 
-spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - valores pred", zcol = "var1.pred")
+spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - predicción", zcol = "var1.pred")
 spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - varianza", zcol = "var1.var")
 
 ```
@@ -1585,7 +1582,7 @@ spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - varianza", zcol = "var1.var
 # Interpolacion por Kriging en Bloque (BK)
 intBK.C1 <- krige(formula = maizC1 ~ 1, 
                   locations = datosRindeMaiz[-c(NAs, outliersC1),],
-                  newdata = puntosPredecirC1,
+                  newdata = puntosPredecir,
                   model = varMejorTeoC1, 
                   block = c(60,60))
 
@@ -1597,7 +1594,7 @@ spplot(intBK.C1, zcol = "var1.var")
 intBK.C1.grid <- SpatialPixelsDataFrame(points = intBK.C1, 
                                         data = intBK.C1@data)
 
-spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - predicciones", zcol = "var1.pred")
+spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - predicción", zcol = "var1.pred")
 spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - varianza", zcol = "var1.var")
 
 ```
@@ -1607,7 +1604,7 @@ spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - varianza", zcol = "var1.var
 # Interpolacion por Kriging en Bloque (BK)
 intBK.C2 <- krige(formula = maizC2 ~ 1, 
                   locations = datosRindeMaiz[-outliersC2,],
-                  newdata = puntosPredecirC2,
+                  newdata = puntosPredecir,
                   model = varMejorTeoC2, 
                   block = c(60,60))
 
@@ -1619,11 +1616,10 @@ spplot(intBK.C2, zcol = "var1.var")
 intBK.C2.grid <- SpatialPixelsDataFrame(points = intBK.C2, 
                                         data = intBK.C2@data)
 
-spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - predicciones", zcol = "var1.pred")
+spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - predicción", zcol = "var1.pred")
 spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var")
 
 ```
-
 
 # Respuesta 5
 
@@ -1633,27 +1629,31 @@ spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var
 
 ```{r}
 
-# Cross validation functions for simple, ordinary or universal point (co)kriging, kriging in a local neighbourhood.
-gstat::krige.cv()
+# Validación cruzada mediante el método "leave-one-out"
+vcOK.C1 <- krige.cv(formula = maizC1~1,
+                    model = varMejorTeoC1,
+                    locations = datosRindeMaiz[-c(NAs,outliersC1),],
+                    nfold = nrow(datosRindeMaiz[-c(NAs,outliersC1),]))
 
-# Interpolacion por Kriging en Bloque (BK)
-intBK.C1 <- krige(formula = maizC1 ~ 1, 
-                  locations = datosRindeMaiz[-c(NAs, outliersC1),],
-                  newdata = puntosPredecirC1,
-                  model = fitVarC1.CirREML, 
-                  block = c(60,60))
+vcOK.C2 <- krige.cv(formula = maizC2~1,
+                    model = varMejorTeoC2,
+                    locations = datosRindeMaiz[-outliersC2,],
+                    nfold = nrow(datosRindeMaiz[-outliersC2,]))
 
-# Predicho
-spplot(intBK.C1, zcol = "var1.pred")
-spplot(intBK.C1, zcol = "var1.var")
+# Plot validación cruzada
+spplot(vcOK.C1, zcol = "var1.pred")
+spplot(vcOK.C2, zcol = "var1.pred")
 
 # Visualizar como grilla
-intBK.C1.grid <- SpatialPixelsDataFrame(points = intBK.C1, 
-                                        data = intBK.C1@data)
+vcOK.C1.grid <- SpatialPixelsDataFrame(points = vcOK.C1,
+                                       data = vcOK.C1@data)
+vcOK.C2.grid <- SpatialPixelsDataFrame(points = vcOK.C2,
+                                       data = vcOK.C2@data)
 
-spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - predicciones", zcol = "var1.pred")
-spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - varianza", zcol = "var1.var")
+spplot(vcOK.C1.grid, main = "Validación cruzada C1", zcol = "var1.pred")
+spplot(vcOK.C2.grid, main = "Validación cruzada C2", zcol = "var1.pred")
 
+# Resultados sumarios
 
 ```
 
@@ -1663,11 +1663,7 @@ spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - varianza", zcol = "var1.var
 
 ```{r}
 
-# Simulaciones (TP7) ------------------------------------------------------
-
-newdataCaChica <- spsample(x = ca20SPDF, type = "regular", n = 100)
-
-# Probabilidad del que el Ca sea mayor a 60 (hacer con 100)
+# Probabilidad de obtener rindes mayores a 9500 kg.ha-1 
 ca.bk.sim <- krige(formula = ca ~ 1, locations = ca20SPDF, newdata = newdataCaChica, model = varioCaFit, block = c(100,100), nsim = 10)
 
 # Hacer consulta para valores mayores a 60 de Ca
