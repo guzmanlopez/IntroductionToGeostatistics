@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
+  pdf_document:
+    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
-    toc: yes
-  pdf_document:
     toc: yes
 ---
 
@@ -1151,7 +1151,7 @@ A partir del análisis de los variogramas empíricos puede decirse que existe es
 
 ### Con librería `geoR`
 
-```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
+```{r, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 
 # Con librería geoR:
 
@@ -1340,7 +1340,7 @@ La dependencia espacial no difiere entre campañas, ya que la distancia ($h$) a 
 
 Se ajustaron los modelos *esférico*, *exponencial* y *circular* a los variogramas empíricos obtenidos para cada una de las campañas mediante estimación de parámetros por el método de *Máxima versoimilitud restringida (REML)*. Se utilizó para ello la librería `geoR` debido a que presenta la función `likfit` que permite estimar los parámetros necesarios (*rango*, *meseta* y *pepita*) para ajustar un modelo de variograma teórico al variograma empírico y seguir un criterio cuantitativo para seleccionar el mejor modelo. La librería `gstat` posee la función `fit.variogram.reml` que cumple con lo anterior pero solo estima el *rango*. También se probó la función `fit.variogram.gls` pero no es eficaz para muchos datos y requería de un muestreo aleatorio (trabajar con una submuestra) sobre los datos originales. 
 
-```{r,fig.height=8, fig.width=8, message=TRUE, warning=FALSE}
+```{r, fig.height=6, fig.width=10, message=TRUE, warning=FALSE}
 
 load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
 
@@ -1415,7 +1415,7 @@ print(AICmodelosC1)
 
 ```
 
-```{r}
+```{r, fig.height=8, fig.width=10, message=TRUE, warning=FALSE}
 
 # Matriz de posibles parámetros iniciales de rango y meseta para C1
 iniCovParsC2 <- cbind("sigma" = seq(0.5,1,length.out = 20),
@@ -1485,7 +1485,7 @@ print(AICmodelosC2)
 
 ```
 
-```{r, fig.height=8, fig.width=12, message=TRUE, warning=FALSE}
+```{r, fig.height=6, fig.width=12, message=TRUE, warning=FALSE}
 
 varMejorTeoC1 <- vgm(psill = likfitVarGeoC1.exp$sigmasq, 
                      model = "Exp", 
@@ -1523,7 +1523,7 @@ par(mfrow = c(1,1))
 
 ## Tamaño de la grilla y bloque 
 
-Para obtener una grilla de predicción de la mitad de fina que la originalmente provista, se utilizó una grilla de con un tamaño de celda de la mitad ($10 m$) que los datos originales ($20 m$) para realizar el *Kriging Ordinario Puntual*. Además se ajustó la extensión de la grilla de predicción para que ajustara a la original. Para obtener un tamaño de bloque que agrupó al menos nueve observaciones originales (teniendo en cuenta que los puntos originales están separados $20 m$ entre si), se utilizó un tamaño de bloque de $60 m x 60 m$ para realizar el *Kriging en Bloque*.
+Para obtener una grilla de predicción de la mitad de fina que la originalmente provista, se utilizó una grilla de con un tamaño de celda de la mitad ($10 m$) que los datos originales ($20 m$) para realizar el *Kriging Ordinario Puntual*. Además se ajustó la extensión de la grilla de predicción para que ajustara a la original. Para obtener un tamaño de bloque que agrupó al menos nueve observaciones originales (teniendo en cuenta que los puntos originales están separados $20 m$ entre si), se utilizó un tamaño de bloque de $60 m * 60 m$ para realizar el *Kriging en Bloque*.
 
 ```{r}
 
@@ -1545,9 +1545,10 @@ puntosPredecir <- spsample(x = datosRindeMaiz,
                            offset = c(0,0))
 
 # Mostrar grilla 
-plot(datosRindeMaiz[500:510,], cex = 0)
-plot(datosRindeMaiz, pch = 19, add = TRUE)
-plot(puntosPredecir, pch = 19, col = "green", cex = 0.5, add = TRUE)
+plot(datosRindeMaiz[505:510,], cex = 0)
+plot(datosRindeMaiz, pch = 19, cex =1.5, add = TRUE)
+plot(puntosPredecir, pch = 19, col = "green", cex = 0.8, add = TRUE)
+box()
 
 ```
 
@@ -1662,18 +1663,21 @@ spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var
 
 Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que para la C1. Sin embargo, se observó una buena predicción para las dos campañas como resumen los indicadores según el valor esperado en la tabla a continuación.
 
-```{r}
+```{r, fig.height=8, fig.width=12, message=TRUE, warning=FALSE}
 
 # Validación cruzada mediante partición de los datos en 1000 partes.
 # Las predicicones estarán basadas en las restantes N-1 partes para un conjunto 
 # de onservaciones de la parte N.
 
-if(length(which(ls() == "vcOK.C1")) == 0 || length(which(ls() == "vcOK.C2")) == 0) {
+if(length(which(ls() == "vcOK.C1")) == 0) {
 
 vcOK.C1 <- krige.cv(formula = maizC1~1,
                     model = varMejorTeoC1,
                     locations = datosRindeMaiz[-c(NAs,outliersC1),],
                     nfold = 1000)
+}
+
+if(length(which(ls() == "vcOK.C2")) == 0) {
 
 vcOK.C2 <- krige.cv(formula = maizC2~1,
                     model = varMejorTeoC2,
