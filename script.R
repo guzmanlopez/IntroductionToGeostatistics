@@ -1,10 +1,16 @@
+# Ambiente de trabajo en `R`
 
-# Ambiente de trabajo
-setwd("~/Documentos/GitHub/IntroductionToGeostatistics")
+# En esta sección se establecieron y describen las características del ambiente de trabajo en `R` que fueron necesarias para poder comenzar a responder a las preguntas de la evaluación. 
 
-load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
+# Información de la sesión ------------------------------------------------
 
-# Cargar librerías --------------------------------------------------------
+print(sessionInfo(), locale = FALSE)
+
+# Se utilizó el Ambiente de Desarrollo Integrado (*IDE*) de RStudio (version 0.99.903) para `R`. 
+
+# Librerias utilizadas ----------------------------------------------------
+
+# Se cargaron todas las librerías que fueron utilizadas para la realización de este trabajo.
 
 # Geoestadística
 library('gstat')
@@ -48,19 +54,53 @@ library('corrgram') # correlogramas
 # Escalas de colores
 library('RColorBrewer')
 
-
 # Cargar datos ------------------------------------------------------------
 
+
+# Se cargaron en `R` los datos espaciales de **rinde de maíz** y **covariables ambientales** para un lote de la región Pampeana para dos campañas agrícolas. Para ello, el archivo original en formato *Hoja de cálculo de Microsoft Excel* (DataExamenGeo16.xlsx) fue convertido a un *Documento de texto plano* (DataExamenGeo16.csv). Para la conversión se mantuvieron las cabeceras originales, se asignó como delimitador de campos la coma (`,`) y el punto (`.`) como separador decimal y se asignó una extensión de archivo de tipo *.csv* (valores separados comas).
+
 # Cargar datos
-datosRindeMaiz <- read.csv(file = "data/DataExamenGeo16.csv", header = TRUE, sep = ",", dec = ".")
+datosRindeMaiz <- read.csv(file = "data/DataExamenGeo16.csv", header = TRUE, 
+                           sep = ",", dec = ".")
 
 # Mostrar las primeras seis filas
 head(datosRindeMaiz)
+
+# Los datos **rendimiento de maíz** (*maizC1* y *maizC2*) y **covariables ambientales** (*Elev*, *NapaDicC1* y *NapaDicC2*) fueron de tipo variables continuas. Mientras que el espacio fue de dos dimensiones dado por $x = \{ Long, Lat \}$.
+
+# Crear objeto espacial (SpatialPointsDataFrame) --------------------------
+
+# El objeto **datosRindeMaiz** de tipo `data.frame` fue transformado a un objeto espacial de tipo `SpatialPointsDataFrame` asignando las columnas *Long* y *Lat* como las coordenadas del objeto.
+
 coordinates(datosRindeMaiz) <- c("Long", "Lat")
+
+# Asignar Sistema de Coordenadas de Referencia (CRS) ----------------------
+
+# Dado que se utilizó un Sistema de Coordenadas de Referencia relativo, se asignó al objeto `datosRindeMaiz` un Sistema de Coordenadas de Referencia vacío. 
+
 proj4string(datosRindeMaiz) <- CRS(as.character(NA))
+
+# Respuesta 1 -------------------------------------------------------------
+
+# > 1) Realice un análisis descriptivo exhaustivo para evaluar los supuestos distribucionales del rinde para ambas campañas, la existencia de cambios en la media dentro del lote y la presencia de valores atípicos. Justifique todas las decisiones que tome respecto de los datos originales. 
+
+## Estructura y resumen de los datos
+
+# El objeto `datosRindeMaiz` posee:
+#   
+#   1. un objeto de clase `data.frame` llamado `data` con los atributos de los datos de rinde de maíz sin las coordenadas (2310 observaciones y 6 variables: *ID*, *Elev*, *NapaDicC1*, *NapaDicC2*, *maizC1*, *maizC2*)
+# 2. un objeto de clase `integer` llamado `coords.nrs` con dos valores que significan el número de columna del `data.frame` original del que se tomaron los datos de las coordenadas
+# 3. un objeto de clase `matrix` llamado `coords` de 2310 filas por 2 columnas con las coordenadas (`Long` y `Lat`)
+# 4. un objeto de clase `matrix` llamado `bbox` de 2 filas por 2 columnas con los límites espaciales (`Long min`, `Long max`, `Lat min` y `Lat max`)
+# 5. un objeto de clase `CRS` llamado `proj4string` con el Sistema de Coordenadas de Referencia
+
 str(datosRindeMaiz)
 
-# Histogramas de variables ------------------------------------------------
+# Descripción de la variación ---------------------------------------------
+
+### Distribución de frecuencias
+
+# Para ilustrar como la distribución de los datos de cada variable se ubica con respecto a su mediana o para identificar valores extremos se realizaron Histogramas y Diagramas de cajas para cada una de las variables.
 
 # Ver histogramas de las variables
 ggDatosRindeMaiz <- ggplot(data = datosRindeMaiz@data)
@@ -75,9 +115,10 @@ ggHistMaizC1 <- ggDatosRindeMaiz +
   theme(plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotMaizC1 <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$maizC1, x = rep("RM", length(datosRindeMaiz$maizC1))), 
+  geom_boxplot(aes(y = datosRindeMaiz$maizC1, 
+                   x = rep("RM", length(datosRindeMaiz$maizC1))), 
                fill = "orange", col = "black", alpha = 0.8) + 
-  labs(title = "Camp.1", x = "", y = "") + 
+  labs(title = "C1", x = "", y = "") + 
   scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 2), position = "top") +
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
@@ -92,10 +133,12 @@ ggHistNapaDicC1 <- ggDatosRindeMaiz +
   theme(plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotNapaDicC1 <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$NapaDicC1, x = rep("PN", length(datosRindeMaiz$NapaDicC1))), 
+  geom_boxplot(aes(y = datosRindeMaiz$NapaDicC1, 
+                   x = rep("PN", length(datosRindeMaiz$NapaDicC1))), 
                fill = "darkblue", col = "black", alpha = 0.7) + 
-  labs(title = "Camp.1", x = "", y = "") + 
-  scale_y_continuous(limits = c(1.5, 6.75), breaks = seq(1.5, 6.75, 1), position = "top") + 
+  labs(title = "C1", x = "", y = "") + 
+  scale_y_continuous(limits = c(1.5, 6.75), 
+                     breaks = seq(1.5, 6.75, 1), position = "top") + 
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
 
@@ -109,27 +152,32 @@ ggHistMaizC2 <- ggDatosRindeMaiz +
   theme(plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotMaizC2 <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$maizC2, x = rep("RM", length(datosRindeMaiz$maizC2))), 
+  geom_boxplot(aes(y = datosRindeMaiz$maizC2, 
+                   x = rep("RM", length(datosRindeMaiz$maizC2))), 
                fill = "orange", col = "black", alpha = 0.8) + 
-  labs(title = "Camp.2", x = "", y = "") + 
-  scale_y_continuous(limits = c(0, 18), breaks = seq(0, 18, 2), position = "top") +
+  labs(title = "C2", x = "", y = "") + 
+  scale_y_continuous(limits = c(0, 18), 
+                     breaks = seq(0, 18, 2), position = "top") +
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
 
 # Napa C2
 ggHistNapaDicC2 <- ggDatosRindeMaiz +
   geom_histogram(aes(x = datosRindeMaiz$NapaDicC2), 
-                 binwidth = 0.25, fill = "darkblue", col = "white", alpha = 0.7) +
+                 binwidth = 0.25, fill = "darkblue", col = "white", 
+                 alpha = 0.7) +
   labs(title = "", x = "Profundidad napa (m)", y = "Frecuencia") + 
   scale_x_continuous(limits = c(1.5, 6.75), breaks = seq(1.5, 6.75, 1)) + 
   scale_y_continuous(limits = c(0, 350), breaks = seq(0, 350, 50)) + 
   theme(plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotNapaDicC2 <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$NapaDicC2, x = rep("PN", length(datosRindeMaiz$NapaDicC2))), 
+  geom_boxplot(aes(y = datosRindeMaiz$NapaDicC2, 
+                   x = rep("PN", length(datosRindeMaiz$NapaDicC2))), 
                fill = "darkblue", col = "black", alpha = 0.7) + 
-  labs(title = "Camp.2", x = "", y = "") + 
-  scale_y_continuous(limits = c(1.5, 6.75), breaks = seq(1.5, 6.75, 1), position = "top") +
+  labs(title = "C2", x = "", y = "") + 
+  scale_y_continuous(limits = c(1.5, 6.75), 
+                     breaks = seq(1.5, 6.75, 1), position = "top") +
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) +
   coord_flip()
 
@@ -140,17 +188,18 @@ ggHistElev <- ggDatosRindeMaiz +
   labs(title = "", x = "Elevación (m)", y = "Frecuencia") + 
   scale_x_continuous(limits = c(241.5, 247.5), breaks = seq(240, 248, 1)) + 
   scale_y_continuous(limits = c(0, 275), breaks = seq(0, 275, 50)) + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.margin = unit(c( -1, 1, 1, 1), "mm"))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        plot.margin = unit(c( -1, 1, 1, 1), "mm"))
 
 ggBoxPlotElev <- ggDatosRindeMaiz +
-  geom_boxplot(aes(y = datosRindeMaiz$Elev, x = rep("EL", length(datosRindeMaiz$Elev))), 
+  geom_boxplot(aes(y = datosRindeMaiz$Elev, 
+                   x = rep("EL", length(datosRindeMaiz$Elev))), 
                fill = "darkred", col = "black", alpha = 0.7) + 
   labs(title = "", x = "", y = "") + 
-  scale_y_continuous(limits = c(241.5, 247.5), breaks = seq(240, 248, 1), position = "top") + 
+  scale_y_continuous(limits = c(241.5, 247.5), 
+                     breaks = seq(240, 248, 1), position = "top") + 
   theme(plot.margin = unit(c(1, 1, -1, 1), "mm")) + 
   coord_flip()
-
-X11()
 
 # Ver plot 
 grid.arrange(ggBoxPlotMaizC1, 
@@ -167,8 +216,15 @@ grid.arrange(ggBoxPlotMaizC1,
              layout_matrix = cbind(c(1,2,3,4), c(5,6,7,8), c(9,10,10,10)), 
              widths = c(1, 1, 1), heights = c(1, 3, 1, 3))
 
+# Se observó para los datos de *rendimiento de maíz* que el valor de la mediana fue mayor para la *campaña 1* que para la *campaña 2* y que la dispersión de valores entorno a la mediana fue mayor para la *campaña 1* que para la *campaña 2*. Por otro lado, la frecuencia de valores de *rendimiento de maíz* por debajo de la mediana fue mayor para la *campaña 2* que para la *campaña 1* y la frecuencia de valores de *rendimiento de maíz* por encima de la mediana fue mayor para la *campaña 1* que para la *campaña 2*. Se observaron valores extremos de *rendimiento de maíz* mayores y menores a la mediana para la *campaña 1* y solo menores a la mediana para la *campaña 2*.
+# 
+# Para los datos de la *profundidad de napa* se observó que el valor de la mediana fue mayor para la *campaña 1* que para la *campaña 2* y que la dispersión de valores entorno a la mediana y la frecuencia de valores mayores y menores a la mediana fue semejante para ambas campañas. En ambas campañas se observaron valores extremos mayores a la mediana. 
+# 
+# Para los datos de *elevación* se observó dispersión de valores entorno a la mediana y la frecuencia entre valores mayores y menores a la mediana fue semejante. No se observaron valores extremos para la *elevación*. 
 
-# Tendencia central y dispersión ------------------------------------------
+### Tendencia central y dispersión 
+
+# Para analizar cuantitativamente el rango, la tendencia central y la dispersión de los datos de rendimiento de maíz y covariables ambientales se creó una función personalizada llamada `ResumenEstadisticas`. Además se incluyó que dicha función retorne el tipo de clase de la variable en `R` y la cantidad de celdas vacías (`NA`).
 
 ResumenEstadisticas <- function(df) {
   
@@ -201,7 +257,7 @@ ResumenEstadisticas <- function(df) {
   # Iteración que recorre todas las columnas del data.frame
   for(i in 1:ncol) {
     
-    # Condición de que la columna para las estadísticas tenga que ser de tipo numérica 
+    # Condición de que la columna para las estadísticas tenga que ser numérica 
     if(is.numeric(df[,i])) {
       
       mediana[i] = median(df[,i], na.rm = TRUE)
@@ -262,11 +318,45 @@ ResumenEstadisticas <- function(df) {
   
 }
 
+# Se llamó a la función `ResumenEstadisticas` pasando como parámetro el `data.frame` llamado `data` contenido en el objeto espacial `datosRindeMaiz` y se asignó el retorno de la función a un nuevo objeto llamado `resumenDatosRindeMaiz`. Además, se imprimió en consola el resultado de la ejecución del comando.
+
 # Crear objeto con las principales estadísticas y mostrarlo en consola
 (resumenDatosRindeMaiz <- ResumenEstadisticas(df = datosRindeMaiz@data))
 
+# Marcar celdas vacías
+NAs <- which(is.na(datosRindeMaiz$maizC1))
 
-# Normalidad --------------------------------------------------------------
+# A través del objeto `resumenDatosRindeMaiz` fue posible obtener el/los estadístico/s necesarios. Por ejemplo: 
+  
+# 1. Obtener el valor de la mediana del Rendimiento del maíz para la Campaña 1
+
+# Ejemplo 1
+(resumenDatosRindeMaiz["maizC1", "mediana"])
+
+# 2. Obtener los valores de mínimo y máximo de la Elevación
+
+# Ejemplo 2
+(resumenDatosRindeMaiz["Elev", c("mínimo","máximo")])
+
+# Se observaron dos celdas vacías para los datos de *rendimiento de maíz* de la *campaña 2*. Todas las variables fueron de tipo numéricas a excepción de la variable identificadora *ID* que fue un entero. 
+# 
+# **Tendencia central**
+#   
+#   Los valores de la media ($\overline{z}$) y la mediana ($Md$) del *rendimiento de maíz* para la *campaña 1* fueron mayores que para la *campaña 2* ($\overline{z}_{Rm1} = 9.13 \ {t}.{ha}^{-1}$, $Md_{Rm1} = 8.86 \ {t}.{ha}^{-1}$ y $\overline{z}_{Rm2} = 7.55 \ {t}.{ha}^{-1}$, $Md_{Rm2} = 7.99 \ {t}.{ha}^{-1}$) mientras que el valor de la moda ($Mo$) fue de $Mo_{Rm1} = 7.00 \ {t}.{ha}^{-1}$ y $Mo_{Rm1} = 9.40 \ {t}.{ha}^{-1}$ respectivamente. 
+# 
+# Los valores de la media y la mediana de la *profundidad de la napa* para la *campaña 1* ($\overline{z} = 4.07 \ m$, $Md = 3.98 \ m$) fueron mayores que para la *campaña 2* ($\overline{z} = 3.44 \ m$, $Md = 3.31 \ m$) mientras que el valor de la moda fue de $3.69 \ m$ y $3.03 \ m$ respectivamente. 
+# 
+# Los valores de la media, la mediana y la moda para la *elevación* fueron de $244.31 \ m$, $244.26 \ m$ y $242.77 \ m$ respectivamente. 
+
+# **Dispersión**
+  
+# El rango ($ = x_{min},x_{max}$) de la variable del *rendimiento de maíz* para la *campaña 1* fue mayor y con valores más altos y más bajos que para la *campaña 2* ($R_{Rm1} = 0.9800 \ {t}.{ha}^{-1},\ 17.0850 \ {t}.{ha}^{-1}$, $R_{Rm2} = 1.9381 \ {t}.{ha}^{-1},\ 12.2521 \ {t}.{ha}^{-1}$), para la variable *profundidad de napa* el rango fue similar para las dos campañas($R_{Pn1} = 2.12 \ m,\ 6.66 \ m$, $R_{Pn2} = 1.63 \ m,\ 6.06 \ m$) y el rango de la *elevación* fue de $R_{El} = 241.91 \ m,\ 247.50 \ m$.  
+
+# Los valores de la varianza y la mediana del *rendimiento de maíz* para la *campaña 1* 
+  
+## Normalidad
+  
+# Para analizar la normalidad de las variables se realizó la prueba de normalidad de Shapiro-Wilk. La hipótesis nula de la prueba de Shapiro-Wilk es que los datos son normales, por lo cual un *p-valor* significativo indicó que se rechazó la hipótesis nula, es decir que la variable analizada fuese normal.
 
 # Elevación
 shapiro.test(datosRindeMaiz$Elev) 
@@ -283,8 +373,11 @@ shapiro.test(datosRindeMaiz$maizC1)
 # Rendimiento del maíz (C2)
 shapiro.test(datosRindeMaiz$maizC2)
 
+# Para el *rendimiento de maíz* y las covariables ambientales se rechazó la hipótesis nula de la prueba de normalidad de Shapiro-Wilk. 
 
-# Transformaciones --------------------------------------------------------
+## Transformaciones
+
+# Se transformó los datos originales a nuevas escalas para acercarlos a una distribución normal. Se probaron las transformaciones logarítmicas, raíz cuadrada y Box-Cox.
 
 # Transformar elevación
 
@@ -298,7 +391,7 @@ shapiro.test(ElevSqrt) # Probar normalidad de la transformación
 
 # Box-Cox
 lambdaElev <- BoxCox.lambda(x = datosRindeMaiz@data$Elev) # Hallar Lambda
-ElevBC <- BoxCox(x = datosRindeMaiz@data$Elev, lambda = lambdaElev) # Transf. vector
+ElevBC <- BoxCox(x = datosRindeMaiz@data$Elev, lambda = lambdaElev) # Transf.vector
 shapiro.test(ElevBC) # Probar normalidad de la transformación 
 
 # Transformar profundidad napa (C1)
@@ -361,145 +454,170 @@ lambdaMaizC2Log <- BoxCox.lambda(x = datosRindeMaiz@data$maizC2)
 maizC2BC <- BoxCox(x = datosRindeMaiz@data$maizC2, lambda = lambdaMaizC2Log) 
 shapiro.test(maizC2BC) 
 
+# Ninguna de las transformaciones de los datos permitió que se pudiera fallar en rechazar la hipótesis nula de normalidad del test de Shapiro-Wilk. 
 
-# Q-Q plots ---------------------------------------------------------------
+## Q-Q Plots
 
 # Q-Q plot rendimiento maíz (C1)
 ggQQmaizC1 <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = maizC1)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$maizC1, na.rm = TRUE), 
               slope = sd(datosRindeMaiz@data$maizC1, na.rm = TRUE), col = "red") +
-  labs(title = "Rend.maíz C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Rend.maíz C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC1Log <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(maizC1))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$maizC1), na.rm = TRUE), 
               slope = sd(log(datosRindeMaiz@data$maizC1), na.rm = TRUE), col = "red") + 
-  labs(title = "Log Rend.maíz C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Rend.maíz C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC1Sqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(maizC1))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$maizC1), na.rm = TRUE), 
               slope = sd(sqrt(datosRindeMaiz@data$maizC1), na.rm = TRUE), col = "red") +
-  labs(title = "Raíz cuadrada Rend.maíz C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Rend.maíz C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC1BC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = maizC1BC)) +
   geom_abline(intercept = mean(maizC1BC, na.rm = TRUE), 
               slope = sd(maizC1BC, na.rm = TRUE), col = "red") +
-  labs(title = "Box-Cox Rend.maíz C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Rend.maíz C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 # Q-Q plot rendimiento maíz (C2)
 ggQQmaizC2 <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = maizC2)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$maizC2, na.rm = TRUE), 
               slope = sd(datosRindeMaiz@data$maizC2, na.rm = TRUE), col = "red") +
-  labs(title = "Rend.maíz C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Rend.maíz C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC2Log <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(maizC2))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$maizC2), na.rm = TRUE), 
               slope = sd(log(datosRindeMaiz@data$maizC2), na.rm = TRUE), col = "red") + 
-  labs(title = "Log Rend.maíz C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Rend.maíz C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC2Sqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(maizC2))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$maizC2), na.rm = TRUE), 
               slope = sd(sqrt(datosRindeMaiz@data$maizC2), na.rm = TRUE), col = "red") +
-  labs(title = "Raíz cuadrada Rend.maíz C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Rend.maíz C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQmaizC2BC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = maizC2BC)) +
   geom_abline(intercept = mean(maizC2BC, na.rm = TRUE), 
               slope = sd(maizC2BC, na.rm = TRUE), col = "red") +
-  labs(title = "Box-Cox Rend.maíz C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Rend.maíz C2", x = "Cuantiles teóricos",
+       y = "Cuantiles de la muestra")
 
 # Q-Q plot profundidad de la napa (C1)
 ggQQNapaDicC1 <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = NapaDicC1)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$NapaDicC1), 
               slope = sd(datosRindeMaiz@data$NapaDicC1), col = "red") +
-  labs(title = "Prof.napa C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Prof.napa C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC1Log <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(NapaDicC1))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$NapaDicC1)), 
               slope = sd(log(datosRindeMaiz@data$NapaDicC1)), col = "red") + 
-  labs(title = "Log Prof.napa C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Prof.napa C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC1Sqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(NapaDicC1))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$NapaDicC1)), 
               slope = sd(sqrt(datosRindeMaiz@data$NapaDicC1)), col = "red") +
-  labs(title = "Raíz cuadrada Prof.napa C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Prof.napa C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC1BC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = NapaDicC1BC)) +
   geom_abline(intercept = mean(NapaDicC1BC, na.rm = TRUE), 
               slope = sd(NapaDicC1BC, na.rm = TRUE), col = "red") +
-  labs(title = "Box-Cox Prof.napa C1", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Prof.napa C1", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 # Q-Q plot profundidad de la napa (C2)
 ggQQNapaDicC2 <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = NapaDicC2)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$NapaDicC2), 
               slope = sd(datosRindeMaiz@data$NapaDicC2), col = "red") +
-  labs(title = "Prof.napa C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Prof.napa C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC2Log <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(NapaDicC2))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$NapaDicC2)), 
               slope = sd(log(datosRindeMaiz@data$NapaDicC2)), col = "red") + 
-  labs(title = "Log Prof.napa C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Prof.napa C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC2Sqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(NapaDicC2))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$NapaDicC2)), 
               slope = sd(sqrt(datosRindeMaiz@data$NapaDicC2)), col = "red") +
-  labs(title = "Raíz cuadrada Prof.napa C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Prof.napa C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQNapaDicC2BC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = NapaDicC2BC)) +
   geom_abline(intercept = mean(NapaDicC2BC, na.rm = TRUE), 
               slope = sd(NapaDicC2BC, na.rm = TRUE), col = "red") +
-  labs(title = "Box-Cox Prof.napa C2", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Prof.napa C2", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 # Q-Q plot elevación
 ggQQElev <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = Elev)) +
   geom_abline(intercept = mean(datosRindeMaiz@data$Elev), 
               slope = sd(datosRindeMaiz@data$Elev), col = "red") +
-  labs(title = "Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Elevación", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQElevLog <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = log(Elev))) +
   geom_abline(intercept = mean(log(datosRindeMaiz@data$Elev)), 
               slope = sd(log(datosRindeMaiz@data$Elev)), col = "red") + 
-  labs(title = "Log Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Log Elevación", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQElevSqrt <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = sqrt(Elev))) +
   geom_abline(intercept = mean(sqrt(datosRindeMaiz@data$Elev)), 
               slope = sd(sqrt(datosRindeMaiz@data$Elev)), col = "red") +
-  labs(title = "Raíz cuadrada Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Raíz cuadrada Elevación", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 ggQQElevBC <- ggDatosRindeMaiz + 
   geom_qq(aes(sample = ElevBC)) +
   geom_abline(intercept = mean(ElevBC), slope = sd(ElevBC), col = "red") +
-  labs(title = "Box-Cox Elevación", x = "Cuantiles teóricos", y = "Cuantiles de la muestra")
+  labs(title = "Box-Cox Elevación", x = "Cuantiles teóricos", 
+       y = "Cuantiles de la muestra")
 
 # Ver plots 
-X11()
 grid.arrange(ggQQmaizC1, ggQQmaizC2, ggQQNapaDicC1, ggQQNapaDicC2, ggQQElev,
-             ggQQmaizC1Log, ggQQmaizC2Log, ggQQNapaDicC1Log, ggQQNapaDicC2Log, ggQQElevLog,
-             ggQQmaizC1Sqrt, ggQQmaizC2Sqrt, ggQQNapaDicC1Sqrt, ggQQNapaDicC2Sqrt, ggQQElevSqrt,
-             ggQQmaizC1BC, ggQQmaizC2BC, ggQQNapaDicC1BC, ggQQNapaDicC2BC, ggQQElevBC,
+             ggQQmaizC1Log, ggQQmaizC2Log, ggQQNapaDicC1Log, ggQQNapaDicC2Log, 
+             ggQQElevLog, ggQQmaizC1Sqrt, ggQQmaizC2Sqrt, ggQQNapaDicC1Sqrt, 
+             ggQQNapaDicC2Sqrt, ggQQElevSqrt,ggQQmaizC1BC, ggQQmaizC2BC, 
+             ggQQNapaDicC1BC, ggQQNapaDicC2BC, ggQQElevBC,
              ncol = 4, nrow = 5, 
-             layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
+             layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), 
+                                   c(11,12,13,14,15), c(16,17,18,19,20))
 )
 
+# A partir del análisis de los Q-Q plots (cuantiles - cuantiles) se observó que todas las transforamciones probadas no acercaron sustantivamente los datos originales a distribuciones normales. Incluso, los Q-Q plots para los datos originales confirman el desvío de los datos de una distribución normal.
 
-# Análisis de tendencia ---------------------------------------------------
+## Análisis de tendencias
+
+# Para analizar si existen tendencias entre el rendimiento de maíz y las covariables ambientales se realizaron gráficos de dispersión de puntos junto con lineas basadas en suavizados de la medias locales de los valores. 
 
 # Rendimiento maíz vs Longitud
 ggTend_MaizC1VsLong <- ggDatosRindeMaiz +
@@ -527,178 +645,1030 @@ ggTend_MaizC2VsLat <- ggDatosRindeMaiz +
 ggTend_MaizC1VsElev <- ggDatosRindeMaiz +
   geom_point(aes(y = maizC1, x = Elev)) + 
   geom_smooth(aes(y = maizC1, x = Elev)) + 
-  labs(title = "", y = "Rendimiento maíz C1 (t/ha)", x = "Elevación (m)")
+  labs(title = "", y = "Rendimiento maíz C1 (t/ha)", 
+       x = "Elevación (m)")
 
 ggTend_MaizC2VsElev <- ggDatosRindeMaiz +
   geom_point(aes(y = maizC2, x = Elev)) + 
   geom_smooth(aes(y = maizC2, x = Elev)) + 
-  labs(title = "", y = "Rendimiento maíz C2 (t/ha)", x = "Elevación (m)")
+  labs(title = "", y = "Rendimiento maíz C2 (t/ha)", 
+       x = "Elevación (m)")
 
 # Rendimiento maíz vs Profundidad de la napa
 ggTend_MaizC1VsNapaDicC1 <- ggDatosRindeMaiz +
   geom_point(aes(y = maizC1, x = NapaDicC1)) + 
   geom_smooth(aes(y = maizC1, x = NapaDicC1)) + 
-  labs(title = "", y = "Rendimiento maíz C1 (t/ha)", x = "Profundidad napa (m)")
+  labs(title = "", y = "Rendimiento maíz C1 (t/ha)", 
+       x = "Profundidad napa (m)")
 
 ggTend_MaizC2VsNapaDicC2 <- ggDatosRindeMaiz +
   geom_point(aes(y = maizC2, x = NapaDicC2)) + 
   geom_smooth(aes(y = maizC2, x = NapaDicC2)) + 
-  labs(title = "", y = "Rendimiento maíz C2 (t/ha)", x = "Profundidad napa (m)")
+  labs(title = "", y = "Rendimiento maíz C2 (t/ha)", 
+       x = "Profundidad napa (m)")
 
-X11()
-# Ver plots 
-# grid.arrange(,
-#              ncol = 4, nrow = 5, 
-#              layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
-#              )
+# Profundidad de la napa vs Elevación
+ggTend_NapaDicC1VsElev <- ggDatosRindeMaiz +
+  geom_point(aes(x = Elev, y = NapaDicC1)) + 
+  geom_smooth(aes(x = Elev, y = NapaDicC1)) + 
+  labs(title = "", x = "Elevación (m)", y = "Profundidad napa (m)")
 
-fitVarC1.Sph <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-                                  data = datosRindeMaiz[sampleC1,],
-                                  model = modTeoSph.C1,
-                                  cutoff = 400)
+ggTend_NapaDicC2VsElev <- ggDatosRindeMaiz +
+  geom_point(aes(y = Elev, x = NapaDicC2)) + 
+  geom_smooth(aes(y = Elev, x = NapaDicC2)) + 
+  labs(title = "", x = "Elevación (m)", y = "Profundidad napa (m)")
 
-fitVarC1.Exp <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-                                  data = datosRindeMaiz[sampleC1,],
-                                  model = modTeoExp.C1,
-                                  cutoff = 400)
+# Ver plots
 
-fitVarC1.Cir <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-                                  data = datosRindeMaiz[sampleC1,],
-                                  model = modTeoCir.C1,
-                                  cutoff = 400)
+grid.arrange(ggTend_MaizC1VsLong, ggTend_MaizC1VsLat, 
+             ggTend_MaizC1VsElev, ggTend_MaizC1VsNapaDicC1,
+             ggTend_MaizC2VsLong, ggTend_MaizC2VsLat, 
+             ggTend_MaizC2VsElev, ggTend_MaizC2VsNapaDicC2,
+             ggTend_NapaDicC1VsElev, ggTend_NapaDicC2VsElev,
+             ncol = 4, nrow = 3,
+             layout_matrix = rbind(c(1,2,3,4), c(5,6,7,8), c(NA,9,10,NA))
+)
 
-# Tomar muestra aleatoria de 1000 puntos
-# sampleC1 <- sample(datosRindeMaiz$ID[-c(NAs, outliersC1)], size = 1000)
+# A partir de los gráficos de dispersión y suavizado de medias, no se observó una tendencia entre el rendimiento de maíz y la latitud o longitud. Sin embargo, se observaron tendencias negativas entre el rendimiento de maíz y la elevación y también con la profundidad de la napa para las dos campañas. Se observó que el rendimiento de maíz decrece con la elevación del terreno y la profundidad de la napa. Asimismo, se observó una tendencia positiva entre la profundidad de la napa y la elevación. 
 
-# geoR
-intOK.C1 <- krige.control(type.krige = "OK", 
-                          trend.d = trend.spatial(data~NapaDicC1+Elev, geodataC1),
-                          trend.l = trend.spatial(data~NapaDicC1+Elev, geodataC1),
-                          obj.model = likfitVarGeoC1.powexp)
-intOK.C1b <- krige.conv(geodataC1, coords=geodataC1$coords, data=geodataC1$data,
-                        locations=coordinates(puntosPredecirC1), krige=intOK.C1)
+## Correlación
 
-image(intOK.C1, puntosPredecirC1)
+# Se calculó el coeficiente de correlación de Pearson ($r$) para cuantificar la relación entre las variables para las cuales se observó tendencia y para las que no. Para complementar la interpretación, se realizaron correlogramas para visualizar la matriz de correlaciones. 
 
+# Rendimiento maíz vs Longitud para C1
+cor.test(x = datosRindeMaiz@coords[-NAs,"Long"], 
+         y = datosRindeMaiz@data$maizC1[-NAs], 
+         method = "pearson")
+# Rendimiento maíz vs Longitud para C2
+cor.test(x = datosRindeMaiz@coords[,"Long"], 
+         y = datosRindeMaiz@data$maizC2, 
+         method = "pearson")
 
+# Rendimiento maíz vs Latitud para C1
+cor.test(x = datosRindeMaiz@coords[-NAs,"Lat"], 
+         y = datosRindeMaiz@data$maizC1[-NAs], 
+         method = "pearson")
+# Rendimiento maíz vs Latitud para C2
+cor.test(x = datosRindeMaiz@coords[,"Lat"], 
+         y = datosRindeMaiz@data$maizC2, 
+         method = "pearson")
 
-# geoR --------------------------------------------------------------------
+# Rendimiento maíz vs Elevación para C1
+cor.test(x = datosRindeMaiz@data$Elev[-NAs], 
+         y = datosRindeMaiz@data$maizC1[-NAs], 
+         method = "pearson")
+# Rendimiento maíz vs Elevación para C2
+cor.test(x = datosRindeMaiz@data$Elev, 
+         y = datosRindeMaiz@data$maizC2, 
+         method = "pearson")
+
+# Rendimiento maíz vs Profundidad de la napa para C1
+cor.test(x = datosRindeMaiz@data$NapaDicC1[-NAs], 
+         y = datosRindeMaiz@data$maizC1[-NAs], 
+         method = "pearson")
+# Rendimiento maíz vs Profundidad de la napa para C2
+cor.test(x = datosRindeMaiz@data$NapaDicC2, 
+         y = datosRindeMaiz@data$maizC2, 
+         method = "pearson")
+
+# Profundidad de la napa vs Elevación para C1
+cor.test(x = datosRindeMaiz@data$NapaDicC1[-NAs], 
+         y = datosRindeMaiz@data$Elev[-NAs], 
+         method = "pearson")
+# Profundidad de la napa vs Elevación para C2
+cor.test(x = datosRindeMaiz@data$NapaDicC2, 
+         y = datosRindeMaiz@data$Elev, 
+         method = "pearson")
+
+# En los siguientes correlogramas las celdas de colores azules y con un patrón de relleno de líneas con una pendiente positiva representan correlaciones positivas y las celdas de colores rojos  con un patrón de relleno de líneas con una pendiente negativa representan correlaciones negativas. La intensidad del color es proporcional a la magnitud del coeficiente de correlación de Pearson.
+
+# Correlograma C1
+corrgram(data.frame("Rend.maíz" = datosRindeMaiz@data$maizC1,
+                    "Long" = datosRindeMaiz@coords[,"Long"], 
+                    "Lat" = datosRindeMaiz@coords[,"Lat"], 
+                    "Elev" = datosRindeMaiz@data$Elev,
+                    "Prof.napa" = datosRindeMaiz@data$NapaDicC1),
+         cor.method="pearson",
+         order = NULL,
+         lower.panel = panel.shade,
+         upper.panel = NULL, 
+         text.panel = panel.txt,
+         main = "Correlograma - C1")
+
+# Correlograma C2
+corrgram(data.frame("Rend.maíz" = datosRindeMaiz@data$maizC2,
+                    "Long" = datosRindeMaiz@coords[,"Long"], 
+                    "Lat" = datosRindeMaiz@coords[,"Lat"], 
+                    "Elev" = datosRindeMaiz@data$Elev,
+                    "Prof.napa" = datosRindeMaiz@data$NapaDicC2), 
+         cor.method="pearson",
+         order = NULL,
+         lower.panel = panel.shade,
+         upper.panel = NULL, 
+         text.panel = panel.txt,
+         main = "Correlograma - C2")
+
+# Se observó que la correlación entre el rendimiento de maíz con la latitud y la longitud fueron bajas ($0 < r < 0.35$), confirmando una tendencia despreciable. Por otro lado, se observó que la correlación fue alta para el rendimiento de maíz con la Elevación ($r_{C1} = -0.56$ y $r_{C2} = -0.73$) y aún fue mayor para la Profundidad de la napa ($r_{C1} = -0.86$ y $r_{C2} = -0.84$). Se confirmó que existe una tendencia negativa entre el rendimiento de maíz y la elevación y entre el rendimiento de maíz y la profundidad de la napa. También se observó que existe una correlación positiva entre la profundidad de la napa y la elevación ($r_{C1} = 0.67$ y $r_{C2} = 0.74$)
+
+# Para definir el modelo de tendencia del rendimiento de maíz, se evaluaron tres modelos de regresiones lineales: 
+#   
+#   1. Modelo de tendencia basado en una regresión lineal múltiple del rendimiento de maíz con la profundidad de la napa y la elevación.
+# 2. Modelo de tendencia basado en una regresión lineal simple del rendimiento de maíz con la profundidad de la napa.
+# 3. Modelo de tendencia basado en una regresión lineal simple del rendimiento de maíz con la elevación.
+
+# Se utilizó el criterio de información de Akaike ($AIC$) para definir el modelo (a menor $AIC$ mejor ajuste).
+
+# Ajuste de moelos para C1
+ajusteC1.M1 <- lm(formula = maizC1 ~ NapaDicC1 + Elev, data = datosRindeMaiz)
+ajusteC1.M2 <- lm(formula = maizC1 ~ NapaDicC1, data = datosRindeMaiz)
+ajusteC1.M3 <- lm(formula = maizC1 ~ Elev, data = datosRindeMaiz)
+
+# Criterio de Información de Akaike
+AIC(ajusteC1.M1, ajusteC1.M2, ajusteC1.M3)
+
+# Ajuste de moelos para C2
+ajusteC2.M1 <- lm(formula = maizC2 ~ NapaDicC2 + Elev, data = datosRindeMaiz)
+ajusteC2.M2 <- lm(formula = maizC2 ~ NapaDicC2, data = datosRindeMaiz)
+ajusteC2.M3 <- lm(formula = maizC2 ~ Elev, data = datosRindeMaiz)
+
+# Criterio de Información de Akaike
+AIC(ajusteC2.M1, ajusteC2.M2, ajusteC2.M3)
+
+# El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($y = \beta_{1}x_{1} + \beta_{2}x_{1} + \beta_{0}$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
+
+# Calcular la importancia relativa para cada predictor - C1
+impRel.C1.M1 <- calc.relimp(ajusteC1.M1, 
+                            type = c("lmg", "last", "first", "pratt"),
+                            rela = TRUE)
+# Resumen
+(impRel.C1.M1)
+
+# Gráfico
+plot(impRel.C1.M1)
+
+# Calcular la importancia relativa para cada predictor - C2
+impRel.C2.M1 <- calc.relimp(ajusteC2.M1, 
+                            type = c("lmg", "last", "first", "pratt"),
+                            rela = TRUE)
+# Resumen
+(impRel.C2.M1 )
+
+# Gráfico
+plot(impRel.C2.M1)
+
+# La varianza explicada por el modelo elegido fue de $73.91 \%$ y de $72.96 \%$ para C1 y para C2 respectivamente. Se observó que la profundidad de la napa tuvo una importancia relativa mayor en el modelo de tendencia elegido que la elevación. Además, dicha observación fue más acentuada para la C1 que para la C2.  
+
+# Agregar modelo de tendencia y residuales a los datos
+
+# C1
+datosRindeMaiz$ajusteC1.M1 <- 
+  ajusteC1.M1$coefficients["NapaDicC1"] * datosRindeMaiz$NapaDicC1 +
+  ajusteC1.M1$coefficients["Elev"] * datosRindeMaiz$Elev +
+  ajusteC1.M1$coefficients["(Intercept)"]
+
+datosRindeMaiz$resAjusteC1.M1 <- NA
+datosRindeMaiz$resAjusteC1.M1[-NAs] <- residuals(ajusteC1.M1)
+
+# C2
+datosRindeMaiz$ajusteC2.M1 <- 
+  ajusteC2.M1$coefficients["NapaDicC2"] * datosRindeMaiz$NapaDicC2 +
+  ajusteC2.M1$coefficients["Elev"] * datosRindeMaiz$Elev +
+  ajusteC2.M1$coefficients["(Intercept)"]
+
+datosRindeMaiz$resAjusteC2.M1 <- residuals(ajusteC2.M1)
+
+## Autocorrelación espacial
+
+# Para examinar patrones de autocorrelación espacial se realizaron correlogramas espaciales basados en el índice de Moran ($I$) para los residuales del modelo de tendencia elegido del rendimiento de maíz. El color azul muestra autocorrelación espacial positiva mientras que el color rojo muestra autocorrelación espacial negativa.
+
+# Índice de Moran para el rendimiento de maíz - C1
+moranRendMaizC1 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
+                            y = as.data.frame(datosRindeMaiz@coords)$Lat, 
+                            z = datosRindeMaiz$resAjusteC1.M1, 
+                            increment = 100, 
+                            resamp = 0, 
+                            latlon = FALSE, 
+                            na.rm = TRUE)
+
+# Índice de Moran para el rendimiento de maíz - C2
+moranRendMaizC2 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long, 
+                            y = as.data.frame(datosRindeMaiz@coords)$Lat, 
+                            z = datosRindeMaiz$resAjusteC2.M1, 
+                            increment = 100, 
+                            resamp = 0, 
+                            latlon = FALSE, 
+                            na.rm = TRUE)
+
+# En los correlogramas se observó una baja correlación espacial positiva hasta los $150 - 200 m$. A partir de esa distancia la correlación espacial fue aleatoria (valores entorno a cero). Para la $C2$ se observó un valor muy alto correlación positiva para distancias mayores a $1200 m$ que pudo deberse a la presencia de valores atípicos y/o a un $n$ bajo para esa clase de distancia ($n_{14} = 96$).    
+
+# Plot correlograma 
+
+# Poligonos de tipos de correlación
+polyAutocorrPos <- data.frame(
+  "id" = rep("1", length(moranRendMaizC2$mean.of.class)/2),
+  "x" = c(seq(0, max(moranRendMaizC2$mean.of.class),
+              length.out = length(moranRendMaizC2$mean.of.class)/2),
+          rev(seq(0, max(moranRendMaizC2$mean.of.class),
+                  length.out = length(moranRendMaizC2$mean.of.class)/2))),
+  "y" = c(rep(0,7), rep(1,7)))
+
+polyAutocorrNeg <- data.frame(
+  "id" = rep("2", length(moranRendMaizC2$mean.of.class)/2),
+  "x" = c(seq(0, max(moranRendMaizC2$mean.of.class),
+              length.out = length(moranRendMaizC2$mean.of.class)/2),
+          rev(seq(0, max(moranRendMaizC2$mean.of.class),
+                  length.out = length(moranRendMaizC2$mean.of.class)/2))),
+  "y" = c(rep(0,7), rep(-0.2,7)))
+
+# Índice de Moran para el rendimiento de maíz - C1
+ggMoranRendMaizC1 <- ggplot(data.frame("intervalos" = moranRendMaizC1$mean.of.class,
+                                       "correlación" = moranRendMaizC1$correlation)) +
+  geom_polygon(aes(x = polyAutocorrPos$x, y = polyAutocorrPos$y, 
+                   group = polyAutocorrPos$id), 
+               fill = "darkblue", alpha = 0.6) + 
+  geom_polygon(aes(x = polyAutocorrNeg$x, y = polyAutocorrNeg$y, 
+                   group = polyAutocorrNeg$id), 
+               fill = "darkred", alpha = 0.6) + 
+  geom_point(aes(x = intervalos, y = correlación), size = 3) +
+  geom_line(aes(x = intervalos, y = correlación)) + 
+  labs(title = "Índice de Moran - C1", 
+       x = "Intervalos de distancia", 
+       y = "Correlación espacial") + 
+  scale_x_continuous(limits = c(0, max(moranRendMaizC1$mean.of.class)), 
+                     breaks = seq(0, max(moranRendMaizC1$mean.of.class), 100)) +
+  scale_y_continuous(limits = c(-0.2, 1), breaks = seq(-0.2, 1, 0.2))
+
+# Plot correlograma 
+# Índice de Moran para el rendimiento de maíz - C2
+ggMoranRendMaizC2 <- ggplot(data.frame("intervalos" = moranRendMaizC2$mean.of.class,
+                                       "correlación" = moranRendMaizC2$correlation)) +
+  geom_polygon(aes(x = polyAutocorrPos$x, y = polyAutocorrPos$y, 
+                   group = polyAutocorrPos$id), 
+               fill = "darkblue", alpha = 0.6) + 
+  geom_polygon(aes(x = polyAutocorrNeg$x, y = polyAutocorrNeg$y, 
+                   group = polyAutocorrNeg$id), 
+               fill = "darkred", alpha = 0.6) + 
+  geom_point(aes(x = intervalos, y = correlación), size = 3) +
+  geom_line(aes(x = intervalos, y = correlación)) + 
+  labs(title = "Índice de Moran - C2", 
+       x = "Intervalos de distancia", 
+       y = "Correlación espacial") + 
+  scale_x_continuous(limits = c(0, max(moranRendMaizC2$mean.of.class)), 
+                     breaks = seq(0, max(moranRendMaizC2$mean.of.class), 100)) +
+  scale_y_continuous(limits = c(-0.2, 1), breaks = seq(-0.2, 1, 0.2))
+
+# Ver plot 
+grid.arrange(ggMoranRendMaizC1, ggMoranRendMaizC2,
+             ncol = 2, nrow = 1, 
+             layout_matrix = cbind(1,2)
+)
+
+## Identificación de valores atípicos espaciales
+
+# Para detectar valores atípicos espaciales se analizó el gráfico de dispersión de Moran que permite evaluar que tan similar es un valor observado respecto a las observaciones de sus vecinos en el espacio. Los puntos en los cuadrantes superior derecho e inferior izquierdo indican una asociación espacial positiva de valores que son más altos y más bajos que la media muestral respectivamente. Los puntos de los cuadrantes inferior derecho y superior izquierdo incluyen observaciones que indican una asociación espacial negativa, es decir, poseen poca similitud con sus vecinos.
+
+# Crear matriz de vecinos por distancias
+nbC1 <- dnearneigh(datosRindeMaiz[-NAs,], 0, 25)
+nbC2 <- dnearneigh(datosRindeMaiz, 0, 25)
+
+# Plotear matriz espacial de vecinos
+plot.nb(x = nbC1, coords = datosRindeMaiz@coords[-NAs,], col = "red")
+plot.nb(x = nbC2, coords = datosRindeMaiz@coords, col = "red")
+
+# Plot de dispersión de Moran
+moranPlotC1 <- moran.plot(x = datosRindeMaiz$resAjusteC1.M1[-NAs], 
+                          listw = nb2listw(nbC1), 
+                          labels = as.character(1:nrow(datosRindeMaiz[-NAs])),
+                          pch = 19, 
+                          cex = 0.3, 
+                          col = "darkred",
+                          ylab = "Valores espacialmente retrasados",
+                          xlab = "Residuales",
+                          main = "C1")
+
+moranPlotC2 <- moran.plot(x = datosRindeMaiz$resAjusteC2.M1,
+                          listw = nb2listw(nbC2), 
+                          labels = as.character(1:nrow(datosRindeMaiz)),
+                          pch = 19, 
+                          cex = 0.3, 
+                          col = "darkred",
+                          ylab = "Valores espacialmente retrasados",
+                          xlab = "Residuales",
+                          main = "C2")
+
+# Filas de puntos influyentes
+ptosInfC1 <- as.numeric(rownames(summary(moranPlotC1)))
+ptosInfC2 <- as.numeric(rownames(summary(moranPlotC2)))
+
+# Histograma de distancias de Cook
+
+par(mfrow= c(1,2))
+
+hist(moranPlotC1$infmat[ptosInfC1,"cook.d"], seq(0, 0.13, 0.002), 
+     col = "black", border = "white", 
+     xlab = "Distancias de Cook", ylab = "Frecuencia", 
+     main = "C1")
+
+hist(moranPlotC2$infmat[ptosInfC2,"cook.d"], seq(0, 0.13, 0.002), 
+     col = "black", border = "white", 
+     xlab = "Distancias de Cook", ylab = "Frecuencia", 
+     main = "C2")
+
+par(mfrow=c(1,1))
+
+# Se definió considerar como valores atípicos aquellos puntos con una distancia de Cook mayores a $4/N$, siendo $N$ el número total de observaciones.
+
+umbralCook <- 4/nrow(datosRindeMaiz)
+
+# Outliers
+outliersC1 <- as.numeric(names(which(moranPlotC1$infmat[ptosInfC1,"cook.d"]>umbralCook)))
+outliersC2 <- as.numeric(names(which(moranPlotC2$infmat[ptosInfC2,"cook.d"]>umbralCook)))
+
+# Agregar valores sin outliers
+datosRindeMaiz$ajusteC1.M1.SinOut <- NA
+datosRindeMaiz$ajusteC1.M1.SinOut[-outliersC1] <- 
+  datosRindeMaiz$ajusteC1.M1[-outliersC1]
+datosRindeMaiz$resAjusteC1.M1.SinOut <- NA
+datosRindeMaiz$resAjusteC1.M1.SinOut[-outliersC1] <- 
+  datosRindeMaiz$resAjusteC1.M1[-outliersC1]
+datosRindeMaiz$ajusteC2.M1.SinOut <- NA
+datosRindeMaiz$ajusteC2.M1.SinOut[-outliersC2] <- 
+  datosRindeMaiz$ajusteC2.M1[-outliersC2]
+datosRindeMaiz$resAjusteC2.M1.SinOut <- NA
+datosRindeMaiz$resAjusteC2.M1.SinOut[-outliersC2] <- 
+  datosRindeMaiz$resAjusteC2.M1[-outliersC2]
+
+# Plot C1
+spplot(datosRindeMaiz, zcol = c("resAjusteC1.M1.SinOut", "resAjusteC1.M1"), 
+       names.attr = c("Modelo sin outliers", "Modelo con outliers"), colorkey = TRUE)
+
+# Plot C2
+spplot(datosRindeMaiz, zcol = c("resAjusteC2.M1.SinOut", "resAjusteC2.M1"), 
+       names.attr = c("Modelo sin outliers", "Modelo con outliers"), colorkey = TRUE)
+
+## Cambios en la media
+
+# Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") de los datos originales de rendimiento de maíz y las covariables ambientales.
+
+# Mapa de puntos de rendimiento de maíz para el lote
+spplot(obj = datosRindeMaiz, zcol = c("maizC1", "maizC2"), 
+       main = "Rendimiento de maíz (t/ha)", colorkey = TRUE)
+
+# Mapa de puntos de la profundidad de la napa para el lote
+spplot(obj = datosRindeMaiz, zcol = c("NapaDicC1", "NapaDicC2"), 
+       main = "Profundidad napa (m)", colorkey = TRUE)
+
+# Mapa de puntos de la elevación del lote
+spplot(obj = datosRindeMaiz, zcol = "Elev",
+       main = "Elevación (m)", colorkey = TRUE)
+
+# Respuesta 2
+
+# > 2) Elabore un variograma empírico apropiado para los datos de rinde en ambas campañas por separado. ¿Considera que existe estructura espacial en cada campaña? ¿El proceso espacial observado en cada caso es isotrópico o anisotrópico? ¿La dependencia espacial observada difiere entre campañas?
+
+## Variograma empírico
+
+# A partir del análisis de los variogramas empíricos puede decirse que existe estructura espacial para las dos campañas ya que:
+#   
+#   1. la semivarianza ($\gamma$) aumenta con la distancia hasta llegar a una meseta, que implica que la dependencia espacial va disminuyendo con la distancia hasta alcanzar la independencia espacial. 
+# 2. al utilizar los residuales de un modelo de tendencia se descarta cualquier efecto de dependencia espacial debido a la misma.
+# 
+# **Nota:** dado que para estimar los parámetros de ajuste de los modelos teóricos a los variogramas empíricos mediante métodos cuantitativos (*Pregunta 3*) se utilizará la librería `geoR` y para realizar los modelos de predicción-interpolación(*Pregunta 4*), validación cruzada (*Pregunta 5*) y simulaciones (*Pregunta 6*) se utilizará la librería `gstat`, se incluyen los variogramas empíricos y direccionales utilizando las dos librerías (requisitos necesarios de creación de objetos para poder utilizar una y otra librería en las siguientes respuestas).  
+
+### Con librería `geoR`
+
+# Con librería geoR:
+
+dfC1 <- data.frame(as.data.frame(datosRindeMaiz@coords), 
+                   "Elev" = datosRindeMaiz$Elev,
+                   "NapaDicC1" = datosRindeMaiz$NapaDicC1,
+                   "maizC1" = datosRindeMaiz$maizC1)
+
+dfC2 <- data.frame(as.data.frame(datosRindeMaiz@coords), 
+                   "Elev" = datosRindeMaiz$Elev,
+                   "NapaDicC2" = datosRindeMaiz$NapaDicC2,
+                   "maizC2" = datosRindeMaiz$maizC2)
+
+# Sacar outliers y NAs
+dfC1 <- dfC1[-c(NAs, outliersC1),]
+dfC2 <- dfC2[-outliersC2,]
+
+# Objetos geodata
+geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 5, 
+                        covar.col = c(3,4))
+geodataC2 <- as.geodata(obj = dfC2, coords.col = 1:2, data.col = 5, 
+                        covar.col = c(3,4))
+
+# Crear variograma empírico con el modelo de tendencia elegido
+varGeoC1 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                   max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC2 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                   max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+
+# Plot variogramas empíricos
+par(mfrow = c(1,2))
+plot(varGeoC1, pch = 19, col = "#0080FF", ylab = "semivarianza", 
+     xlab = "distancia", main = "C1")
+plot(varGeoC2, pch = 19, col = "#0080FF", ylab = "semivarianza", 
+     xlab = "distancia", main = "C2")
+par(mfrow = c(1,1))
+
+### Con librería `gstat`
+
+# Con librería gstat:
+
+# Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el 
+# modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' 
+# guardada también en el set de datos de datosRindeMaiz.
+
+# Crear variograma empírico omnidireccional - C1
+varOmniC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
+                       data = datosRindeMaiz[-c(NAs, outliersC1),],
+                       width = 20, cutoff = 400)
+
+# Plotear variograma
+plot(varOmniC1, xlab = "distancia", ylab = "semivarianza",
+     main = "Variograma empírico - C1", pch = 19)
+
+# Con librería gstat:
+
+# Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el 
+# modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' 
+# guardada también en el set de datos de datosRindeMaiz.
+
+# Crear variograma empírico omnidireccional - C2
+varOmniC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
+                       data = datosRindeMaiz[-outliersC2,],
+                       width = 20, cutoff = 400)
+
+# Plotear variograma
+plot(varOmniC2, xlab = "distancia", ylab = "semivarianza",
+     main = "Variograma empírico - C2", pch = 19)
+
+## Proceso espacial: isotropía y anisotropía
+
+# A partir de analizar los variogramas direccionales se concluyó que el proceso espacial en las dos campañas es isotrópico. No se observaron diferencias aparentes en los valores de la semivarianza para la cual la misma se estabiliza al alcanzar una meseta ($\gamma_{C1} = ~ 1.7$ $\gamma_{C2} = ~ 0.7$) ni tampoco a la distancia a la cual se llega a $\gamma$ ($h_{C1} = ~ 200$ y $h_{C2} = ~ 200$) para las distintas direcciones en el espacio ($0^{\circ}, 45^{\circ}, 90^{\circ} y 135^{\circ}$). 
+
+### Con librería `geoR`
+
+# Con librería geoR:
+
+# Crear variogramas direccionales
+varGeoC1dir0 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                       direction = 0, tolerance = 45/2, unit.angle = "degrees",
+                       max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC1dir45 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                        direction = 45, tolerance = 45/2, unit.angle = "degrees",
+                        max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC1dir90 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                        direction = 90, tolerance = 45/2, unit.angle = "degrees",
+                        max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC1dir135 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+                         direction = 135, tolerance = 45/2, unit.angle = "degrees",
+                         max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+
+# Plot variogramas direccionales - C1
+par(mfrow = c(2,2))
+plot(varGeoC1dir0, pch = 19, col = "#0080FF", ylim = c(0,2), 
+     ylab = "semivarianza", xlab = "distancia", main = "0 grados")
+grid()
+plot(varGeoC1dir45, pch = 19, col = "#0080FF", ylim = c(0,2), 
+     ylab = "semivarianza", xlab = "distancia", main = "45 grados")
+grid()
+plot(varGeoC1dir90, pch = 19, col = "#0080FF", ylim = c(0,2),
+     ylab = "semivarianza", xlab = "distancia", main = "90 grados")
+grid()
+plot(varGeoC1dir135, pch = 19, col = "#0080FF", ylim = c(0,2),
+     ylab = "semivarianza", xlab = "distancia", main = "135 grados")
+grid()
+par(mfrow = c(1,1))
+
+# Con librería geoR:
+
+# Crear variogramas direccionales
+varGeoC2dir0 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                       direction = 0, tolerance = 45/2, unit.angle = "degrees",
+                       max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC2dir45 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                        direction = 45, tolerance = 45/2, unit.angle = "degrees",
+                        max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC2dir90 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                        direction = 90, tolerance = 45/2, unit.angle = "degrees",
+                        max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+varGeoC2dir135 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
+                         direction = 135, tolerance = 45/2, unit.angle = "degrees",
+                         max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
+
+# Plot variogramas direccionales - C2
+par(mfrow = c(2,2))
+plot(varGeoC2dir0, pch = 19, col = "#0080FF", ylim = c(0,1), 
+     ylab = "semivarianza", xlab = "distancia", main = "0 grados")
+grid()
+plot(varGeoC2dir45, pch = 19, col = "#0080FF", ylim = c(0,1), 
+     ylab = "semivarianza", xlab = "distancia", main = "45 grados")
+grid()
+plot(varGeoC2dir90, pch = 19, col = "#0080FF", ylim = c(0,1),
+     ylab = "semivarianza", xlab = "distancia", main = "90 grados")
+grid()
+plot(varGeoC2dir135, pch = 19, col = "#0080FF", ylim = c(0,1),
+     ylab = "semivarianza", xlab = "distancia", main = "135 grados")
+grid()
+par(mfrow = c(1,1))
+
+### Con librería `gstat`
+
+# Con librería gstat:
+
+# Crear variograma empírico direccional - C1
+varDirC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
+                      data = datosRindeMaiz[-c(NAs,outliersC1),],
+                      width = 20, cutoff = 400,
+                      alpha = c(0,45,90,135))
+
+# Plotear variograma
+plot(varDirC1, xlab = "distancia", ylab = "semivarianza", main = "C1", pch = 19)
+
+# Con gstat:
+varDirC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
+                      data = datosRindeMaiz[-outliersC2,],
+                      width = 20, cutoff = 400,
+                      alpha = c(0,45,90,135))
+
+# Plotear variograma
+plot(varDirC2, xlab = "distancia", ylab = "semivarianza", main = "C2", pch = 19)
+
+# La dependencia espacial no difiere entre campañas, ya que la distancia ($h$) a la cual se llega a $\gamma$ ($h_{C1} = ~ 200$ y $h_{C2} = ~ 200$) es aproximadamente la misma para las dos campañas. 
+
+# Respuesta 3
+
+# > 3) Ajuste al menos tres tipos de modelos permisibles para cada uno de los variogramas muestrales obtenidos en el punto anterior y elija el mejor en cada caso justificando su elección a partir de un criterio cuantitativo objetivo. Utilice procedimientos de estimación estadísticos para ajustar el modelo del variograma. 
+
+## Ajustar modelos a variograma
+
+# Se ajustaron los modelos *esférico*, *exponencial* y *circular* a los variogramas empíricos obtenidos para cada una de las campañas mediante estimación de parámetros por el método de *Máxima versoimilitud restringida (REML)*. Se utilizó para ello la librería `geoR` debido a que presenta la función `likfit` que permite estimar los parámetros necesarios (*rango*, *meseta* y *pepita*) para ajustar un modelo de variograma teórico al variograma empírico y seguir un criterio cuantitativo para seleccionar el mejor modelo. La librería `gstat` posee la función `fit.variogram.reml` que cumple con lo anterior pero solo estima el *rango*. También se probó la función `fit.variogram.gls` pero no es eficaz para muchos datos y requería de un muestreo aleatorio (trabajar con una submuestra) sobre los datos originales. 
+
+# Cargar objetos para evitar correr procesos demandantes de mucho tiempo computacional
+load("~/data/RData.RData")
+
+# Tomar muestra para el ajuste de 500 puntos
+geodataC1 <- sample.geodata(geodataC1, size = 500, replace = FALSE)
+geodataC2 <- sample.geodata(geodataC2, size = 500, replace = FALSE)
 
 # Matriz de posibles parámetros iniciales de rango y meseta para C1
-iniCovParsC1 <- cbind("sigma" = seq(1, 3, length.out = 20),
-                      "phi" = seq(60, 240, length.out = 20))
+iniCovParsC1 <- cbind("sigma" = seq(1,3,length.out = 20),
+                      "phi" = seq(60,240,length.out = 20))
 
 iniCovParsC1 <- as.matrix(iniCovParsC1) # convertir a matriz
 
-# Ajuste modelo exponencial
-# likfitVarGeoC1.exp <- likfit(geodataC1, 
-#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-#                              ini.cov.pars = iniCovParsC1,
-#                              fix.nugget = TRUE,
-#                              nugget = 0,
-#                              cov.model = "exponential", 
-#                              lik.method = "REML")
+if(length(which(ls() == "likfitVarGeoC1.sph")) == 0) {
+  
+  # Ajuste modelo esférico
+  likfitVarGeoC1.sph <- likfit(geodataC1,
+                               trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                               ini.cov.pars = iniCovParsC1,
+                               limits = pars.limits(phi = c(50,250), sigmasq = c(0.5,3.5)),
+                               fix.nugget = FALSE,
+                               cov.model = "spherical",
+                               lik.method = "REML")
+}
 
-# Ajuste modelo esférico
-# likfitVarGeoC1.sph <- likfit(geodataC1, 
-#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-#                              ini.cov.pars = iniCovParsC1,
-#                              limits = pars.limits(phi = c(200,250), sigmasq = c(1.7,1.9)), 
-#                              fix.nugget = TRUE,
-#                              nugget = 0,
-#                              cov.model = "spherical", 
-#                              lik.method = "REML")
+if(length(which(ls() == "likfitVarGeoC1.exp")) == 0) {
+  
+  # Ajuste modelo exponencial
+  likfitVarGeoC1.exp <- likfit(geodataC1,
+                               trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                               ini.cov.pars = iniCovParsC1,
+                               limits = pars.limits(phi = c(50,250), sigmasq = c(0.5,3.5)),
+                               fix.nugget = TRUE,
+                               nugget = 0,
+                               cov.model = "exponential",
+                               lik.method = "REML")
+  
+}
 
-# Ajuste modelo potencia exponencial
-# likfitVarGeoC1.powexp <- likfit(geodataC1, 
-#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-#                              ini.cov.pars = iniCovParsC1,
-#                              fix.nugget = TRUE,
-#                              fix.kappa = FALSE,
-#                              nugget = 0,
-#                              cov.model = "powered.exponential", 
-#                              lik.method = "REML")
-
-# Ajuste modelo circular
-likfitVarGeoC1.cir <- likfit(geodataC1,
-                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
-                             ini.cov.pars = iniCovParsC1,
-                             fix.nugget = FALSE,
-                             cov.model = "circular",
-                             lik.method = "REML")
+if(length(which(ls() == "likfitVarGeoC1.cir")) == 0) {
+  
+  # Ajuste modelo circular
+  likfitVarGeoC1.cir <- likfit(geodataC1,
+                               trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                               ini.cov.pars = iniCovParsC1,
+                               limits = pars.limits(phi = c(50,250), sigmasq = c(0.5,3.5)),
+                               fix.nugget = TRUE,
+                               nugget = 0,
+                               cov.model = "circular",
+                               lik.method = "REML")
+}
 
 # Plot variograma empírico + modelos
-plot(varGeoC1, main = "C1",
-     ylab = "semivarianza", 
+plot(varGeoC1, main = "C1", ylab = "semivarianza", 
      xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,4))
-lines.variomodel(likfitVarGeoC1.exp, col = "red", lty = 1)
-lines.variomodel(likfitVarGeoC1.sph, col = "red", lty = 2)
-lines.variomodel(likfitVarGeoC1.powexp, col = "red", lty = 3)
+lines.variomodel(likfitVarGeoC1.sph, col = "red", lty = 1)
+lines.variomodel(likfitVarGeoC1.exp, col = "red", lty = 2)
+lines.variomodel(likfitVarGeoC1.cir, col = "red", lty = 3)
 grid()
-legend('topleft', lty = c(1,2,3), legend = c('Exp','Esf','PotExp'), col = rep("red",3))
+legend('topleft', lty = c(1,2,3), legend = c('Esf','Exp','Cir'), col = rep("red", 3))
 
+# Selección de modelo por criterio de información de Akaike
+AICmodelosC1 <- data.frame("Modelo" = c('Esférico','Exponencial','Circular'),
+                           "AIC" = c(likfitVarGeoC1.sph$AIC,
+                                     likfitVarGeoC1.exp$AIC,
+                                     likfitVarGeoC1.cir$AIC))
+print(AICmodelosC1)
 
-# gstat fit variogram -----------------------------------------------------
+# Matriz de posibles parámetros iniciales de rango y meseta para C1
+iniCovParsC2 <- cbind("sigma" = seq(0.5,1,length.out = 20),
+                      "phi" = seq(100,300,length.out = 20))
 
-fitVarOmniC1.1 <- fit.variogram(object = varOmniC1, model = modTeoSph.C1, fit.method = 7)
+iniCovParsC2 <- as.matrix(iniCovParsC2) # convertir a matriz
 
-# Ajustar modelo teórico a variograma empírico
-# mediante Máxima Verosimilitud Restringida (REML) 
+if(length(which(ls() == "likfitVarGeoC2.sph")) == 0) {
+  
+  # Ajuste modelo esférico
+  likfitVarGeoC2.sph <- likfit(geodataC2,
+                               trend = trend.spatial(data~NapaDicC2+Elev, geodataC2),
+                               ini.cov.pars = iniCovParsC2,
+                               limits = pars.limits(phi = c(90,310), sigmasq = c(0.4,1.1)),
+                               fix.nugget = TRUE, 
+                               nugget = 0,
+                               cov.model = "spherical",
+                               lik.method = "REML")
+}
 
-## Ajuste del Modelo Esférico
+if(length(which(ls() == "likfitVarGeoC2.exp")) == 0) {
+  
+  # Ajuste modelo exponencial
+  likfitVarGeoC2.exp <- likfit(geodataC2,
+                               trend = trend.spatial(data~NapaDicC2+Elev, geodataC2),
+                               ini.cov.pars = iniCovParsC2,
+                               limits = pars.limits(phi = c(90,310), sigmasq = c(0.4,1.1)),
+                               fix.nugget = TRUE, 
+                               nugget = 0,
+                               cov.model = "exponential",
+                               lik.method = "REML")
+  
+}
 
-fitVarC1.Sph.REML <- fit.variogram.reml(
-  formula = maizC1 ~ NapaDicC1 + Elev,
-  data = datosRindeMaiz[-c(NAs, outliersC1),],
-  model = vgm(psill=1.7, model="Sph", range=80, nugget=0),
-  debug.level = 65)
-# Resultado: Negative log-likelyhood: 1160.19
+if(length(which(ls() == "likfitVarGeoC2.cir")) == 0) {
+  
+  # Ajuste modelo circular
+  likfitVarGeoC2.cir <- likfit(geodataC2,
+                               trend = trend.spatial(data~NapaDicC2+Elev, geodataC2),
+                               ini.cov.pars = iniCovParsC2,
+                               limits = pars.limits(phi = c(90,310), sigmasq = c(0.4,1.1)),
+                               fix.nugget = TRUE, 
+                               nugget = 0,
+                               cov.model = "circular",
+                               lik.method = "REML")
+}
 
-fitVarC2.Sph.REML <- fit.variogram.reml(
-  formula = maizC2 ~ NapaDicC2 + Elev,
-  data = datosRindeMaiz[-outliersC2,],
-  model = vgm(psill=0.6, model="Sph", range=150, nugget=0),
-  debug.level = 65) 
-# Resultado: Negative log-likelyhood: 
+# Plot variograma empírico + modelos
+plot(varGeoC2, main = "C2", ylab = "semivarianza", 
+     xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,2))
+lines.variomodel(likfitVarGeoC2.sph, col = "red", lty = 1)
+lines.variomodel(likfitVarGeoC2.exp, col = "red", lty = 2)
+lines.variomodel(likfitVarGeoC2.cir, col = "red", lty = 3)
+grid()
+legend('topleft', lty = c(1,2,3), legend = c('Esf','Exp','Cir'), col = rep("red", 3))
 
-## Ajuste del Modelo Exponencial
+# Selección de modelo por criterio de información de Akaike
+AICmodelosC2 <- data.frame("Modelo" = c('Esférico','Exponencial','Circular'),
+                           "AIC" = c(likfitVarGeoC2.sph$AIC,
+                                     likfitVarGeoC2.exp$AIC,
+                                     likfitVarGeoC2.cir$AIC))
+print(AICmodelosC2)
 
-fitVarC1.Exp.REML <- fit.variogram.reml(
-  formula = maizC1 ~ NapaDicC1 + Elev,
-  data = datosRindeMaiz[-c(NAs, outliersC1),],
-  model = vgm(psill=1.7, model="Exp", range=80, nugget=0),
-  debug.level = 65)
-# Resultado: Negative log-likelyhood: -1197.16
+# Para las dos campañas, el mejor ajuste del modelo de variograma teórico a los datos fue para el *Exponencial*. Se eligió dicho modelo debido a que el que presentó el $AIC$ más bajo ($AIC_{C1} = 1317.886$ y $AIC_{C2} = 979.6216$) comparando en cada caso frente a los modelos *Esférico* ($AIC_{C1} = 1331.098$ y $AIC_{C2} = 994.0059$) y *Circular* ($AIC_{C1} = 1359.595$ y $AIC_{C2} = 1024.4368$).
 
-fitVarC2.Exp.REML <- fit.variogram.reml(
-  formula = maizC2 ~ NapaDicC2 + Elev,
-  data = datosRindeMaiz[-outliersC2,],
-  model = vgm(psill=0.8, model="Exp", range=100, nugget=0),
-  debug.level = 65)
-# Resultado: Negative log-likelyhood: 
+{r, fig.height=6, fig.width=12, message=TRUE, warning=FALSE}
 
-## Ajuste del Modelo Circular
+varMejorTeoC1 <- vgm(psill = likfitVarGeoC1.exp$sigmasq, 
+                     model = "Exp", 
+                     range = likfitVarGeoC1.exp$phi,
+                     nugget = 0)
 
-likfitVarGeoC1.cir
-# likfit: estimated model parameters:
-#      beta0      beta1      beta2      tausq    sigmasq        phi 
-# "  6.2981" " -2.3431" "  0.0503" "  0.1375" "  1.8341" "116.0787" 
-# Practical Range with cor=0.05 for asymptotic range: 116.0787
-# 
-# likfit: maximised log-likelihood = -2559
+varMejorTeoC2 <- vgm(psill = likfitVarGeoC2.exp$sigmasq, 
+                     model = "Exp", 
+                     range = likfitVarGeoC2.exp$phi,
+                     nugget = 0)
 
-fitVarC1.Cir.REML <- fit.variogram.reml(
-  formula = maizC1 ~ NapaDicC1 + Elev,
-  data = datosRindeMaiz[-c(NAs, outliersC1),],
-  model = vgm(psill=1.8341, model="Cir", range=116.0787, nugget=0.1375),
-  debug.level = 65)
-# Resultado: Negative log-likelyhood: -1105.18 (modelo elegido)
+par(mfrow = c(1,2))
 
-fitVarC2.Cir.REML <- fit.variogram.reml(
-  formula = maizC2 ~ NapaDicC2 + Elev,
-  data = datosRindeMaiz[-outliersC2,],
-  model = vgm(psill=1, model="Cir", range=150, nugget=0),
-  debug.level = 65)
-# Resultado: Negative log-likelyhood: 
+# Plotear variograma experimental y ajuste modelo teórico - C1
+plot(x = varOmniC1$dist, y = varOmniC1$gamma, main = "Modelos - C1",
+     col = "#0080FF", ylab = "semivarianza", xlab = "distancia",
+     ylim = c(0, 2), pch = 19)
+lines(variogramLine(object = varMejorTeoC1, maxdist = 500), col = "red", lwd = 1, lty = 1)
+legend("topleft", c("Exponencial"), lty = 1, col = "red")
 
+# Plotear variograma experimental y ajuste modelo teórico - C2
+plot(x = varOmniC2$dist, y = varOmniC2$gamma, main = "Modelos - C2",
+     col = "#0080FF", ylab = "semivarianza", xlab = "distancia",
+     ylim = c(0, 1.2), pch = 19)
+lines(variogramLine(object = varMejorTeoC2, maxdist = 500), col = "red", lwd = 1, lty = 1)
+legend("topleft", c("Exponencial"), lty = 1, col = "red")
 
+par(mfrow = c(1,1))
+
+# Respuesta 4
+
+# > 4) Realice una interpolación para los datos de rinde de cada campaña mediante kriging ordinario puntual y kriging en bloque. Utilice una grilla de predicción hasta la mitad de fina que la originalmente provista para el kriging puntual y un tamaño de bloque que agrupe al menos nueve observaciones originales. Elabore para cada campaña tanto mapas del rinde de maíz predicho, como de la variabilidad de la predicción. Justifique todas las decisiones necesarias para realizar estas interpolaciones.  
+
+## Tamaño de la grilla y bloque 
+
+# Para obtener una grilla de predicción de la mitad de fina que la originalmente provista, se utilizó una grilla de con un tamaño de celda de la mitad ($10 m$) que los datos originales ($20 m$) para realizar el *Kriging Ordinario Puntual*. Además se ajustó la extensión de la grilla de predicción para que ajustara a la original. Para obtener un tamaño de bloque que agrupó al menos nueve observaciones originales (teniendo en cuenta que los puntos originales están separados $20 m$ entre si), se utilizó un tamaño de bloque de $60 m * 60 m$ para realizar el *Kriging en Bloque*.
+
+# Crear nuevo borde
+bb <- matrix(data = c(bbox(datosRindeMaiz)["Long","min"],
+                      bbox(datosRindeMaiz)["Long","max"] + 10,
+                      bbox(datosRindeMaiz)["Lat","min"],
+                      bbox(datosRindeMaiz)["Lat","max"] + 10), 
+             2, 2, byrow = TRUE)
+
+colnames(bb) <- c("min", "max")
+rownames(bb) <- c("Long", "Lat")
+
+# Definir grilla donde predecir valores
+puntosPredecir <- spsample(x = datosRindeMaiz,
+                           type = "regular",
+                           bb = bb,
+                           cellsize = 10, 
+                           offset = c(0,0))
+
+# Mostrar grilla 
+par(mfrow = c(1,2))
+plot(datosRindeMaiz[,], cex = 0, main = "Todos")
+plot(datosRindeMaiz, pch = 19, cex =1.5, add = TRUE)
+plot(puntosPredecir, pch = 19, col = "green", cex = 0.8, add = TRUE)
+box()
+plot(datosRindeMaiz[505:510,], cex = 0, main = "Detalle")
+plot(datosRindeMaiz, pch = 19, cex =1.5, add = TRUE)
+plot(puntosPredecir, pch = 19, col = "green", cex = 0.8, add = TRUE)
+box()
+par(mfrow = c(1,1))
+
+## Kriging Ordinario Puntual
+
+if(length(which(ls() == "intOK.C1")) == 0) {
+  
+  # Interpolacion por Kriging Ordinario (KO)
+  intOK.C1 <- krige(formula = maizC1 ~ 1, 
+                    locations = datosRindeMaiz[-c(NAs, outliersC1),],
+                    newdata = puntosPredecir,
+                    model = varMejorTeoC1)
+  
+}
+
+# Predicho
+spplot(intOK.C1, zcol = "var1.pred")
+spplot(intOK.C1, zcol = "var1.var")
+
+# Visualizar como grilla
+intOK.C1.grid <- SpatialPixelsDataFrame(points = puntosPredecir, 
+                                        data = intOK.C1@data)
+
+spplot(intOK.C1.grid, main = "Kriging Ordinario C1 - predicción", zcol = "var1.pred")
+spplot(intOK.C1.grid, main = "Kriging Ordinario C1 - varianza", zcol = "var1.var")
+
+if(length(which(ls() == "intOK.C2")) == 0) {
+  
+  # Interpolacion por Kriging Ordinario (KO)
+  intOK.C2 <- krige(formula = maizC2 ~ 1, 
+                    locations = datosRindeMaiz[-outliersC2,],
+                    newdata = puntosPredecir,
+                    model = varMejorTeoC2)
+}
+
+# Predicho
+spplot(intOK.C2, zcol = "var1.pred")
+spplot(intOK.C2, zcol = "var1.var")
+
+# Visualizar como grilla
+intOK.C2.grid <- SpatialPixelsDataFrame(points = puntosPredecir, 
+                                        data = intOK.C2@data)
+
+spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - predicción", zcol = "var1.pred")
+spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - varianza", zcol = "var1.var")
+
+## Kriging en Bloque
+
+if(length(which(ls() == "intBK.C1")) == 0) {
+  
+  # Interpolacion por Kriging en Bloque (BK)
+  intBK.C1 <- krige(formula = maizC1 ~ 1, 
+                    locations = datosRindeMaiz[-c(NAs, outliersC1),],
+                    newdata = puntosPredecir,
+                    model = varMejorTeoC1, 
+                    block = c(60,60))
+}
+
+# Predicho
+spplot(intBK.C1, zcol = "var1.pred")
+spplot(intBK.C1, zcol = "var1.var")
+
+# Visualizar como grilla
+intBK.C1.grid <- SpatialPixelsDataFrame(points = intBK.C1, 
+                                        data = intBK.C1@data)
+
+spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - predicción", zcol = "var1.pred")
+spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - varianza", zcol = "var1.var")
+
+if(length(which(ls() == "intBK.C2")) == 0) {
+  
+  # Interpolacion por Kriging en Bloque (BK)
+  intBK.C2 <- krige(formula = maizC2 ~ 1, 
+                    locations = datosRindeMaiz[-outliersC2,],
+                    newdata = puntosPredecir,
+                    model = varMejorTeoC2, 
+                    block = c(60,60))
+}
+
+# Predicho
+spplot(intBK.C2, zcol = "var1.pred")
+spplot(intBK.C2, zcol = "var1.var")
+
+# Visualizar como grilla
+intBK.C2.grid <- SpatialPixelsDataFrame(points = intBK.C2, 
+                                        data = intBK.C2@data)
+
+spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - predicción", zcol = "var1.pred")
+spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var")
+
+# Respuesta 5
+
+# > 5) Realice un procedimiento de validación cruzada para el método de interpolación puntual para las campañas analizadas en el punto anterior. Presente resultados sumarios respecto del error de predicción para toda el área estudiada.
+
+## Validación cruzada
+
+# Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que para la C1. Sin embargo, se observó una buena predicción para las dos campañas como resumen los indicadores según el valor esperado en la tabla a continuación.
+
+# Validación cruzada mediante partición de los datos en 1000 partes.
+# Las predicicones estarán basadas en las restantes N-1 partes para un conjunto 
+# de onservaciones de la parte N.
+
+if(length(which(ls() == "vcOK.C1")) == 0) {
+  
+  vcOK.C1 <- krige.cv(formula = maizC1~1,
+                      model = varMejorTeoC1,
+                      locations = datosRindeMaiz[-c(NAs,outliersC1),],
+                      nfold = 1000)
+}
+
+if(length(which(ls() == "vcOK.C2")) == 0) {
+  
+  vcOK.C2 <- krige.cv(formula = maizC2~1,
+                      model = varMejorTeoC2,
+                      locations = datosRindeMaiz[-outliersC2,],
+                      nfold = 1000)
+}
+
+# Analizar validación cruzada
+par(mfrow = c(2,2))
+
+plot(x = vcOK.C1$observed, 
+     y = vcOK.C1$observed - vcOK.C1$residual,
+     xlab = "observados",
+     ylab = "observados - residuales",
+     main = "C1")
+lines(x = 0:20, y = 0:20, col = "red")
+
+plot(x = vcOK.C2$observed, 
+     y = vcOK.C2$observed - vcOK.C2$residual,
+     xlab = "observados",
+     ylab = "observados - residuales",
+     main = "C2")
+lines(x = 0:20, y = 0:20, col = "red")
+
+plot(x = vcOK.C1$observed, 
+     y = vcOK.C1$residual,
+     xlab = "observados",
+     ylab = "residuales",
+     main = "C1")
+lines(x = 0:19, y = rep(0,20), col = "red")
+
+plot(x = vcOK.C2$observed, 
+     y = vcOK.C2$residual,
+     xlab = "observados",
+     ylab = "residuales",
+     main = "C2")
+lines(x = 0:19, y = rep(0,20), col = "red")
+
+par(mfrow = c(1,1))
+
+# Calcular RMSE para toda el área
+rmse <- function(error) {
+  sqrt(mean(error^2))
+}
+
+# Observados - predicho
+RMSE.C1 <- rmse(vcOK.C1$residual)
+RMSE.C2 <- rmse(vcOK.C2$residual)
+
+# Tabla de resultados sumarios
+vcResumen <- data.frame("Indicador" = c("Error.medio", 
+                                        "Error.medio.cuadrático",
+                                        "Error.medio.cuadrático.normalizado",
+                                        "Correlación.obsVSpred",
+                                        "Correlación.predVSresiduales",
+                                        "RMSE"),
+                        "ValorC1" = c(mean(vcOK.C1$residual), 
+                                      mean(vcOK.C1$residual^2),
+                                      mean(vcOK.C1$zscore^2),
+                                      cor(vcOK.C1$observed, vcOK.C1$observed - vcOK.C1$residual),
+                                      cor(vcOK.C1$observed - vcOK.C1$residual, vcOK.C1$residual),
+                                      RMSE.C1),
+                        "ValorC2" = c(mean(vcOK.C2$residual), 
+                                      mean(vcOK.C2$residual^2),
+                                      mean(vcOK.C2$zscore^2),
+                                      cor(vcOK.C2$observed, vcOK.C2$observed - vcOK.C2$residual),
+                                      cor(vcOK.C2$observed - vcOK.C2$residual, vcOK.C2$residual),
+                                      RMSE.C2),
+                        "Ideal" = c("0","0","1","1", "0", "0"))
+# Ver
+(vcResumen)
+
+# Respuesta 6
+
+# > 6) A partir de los modelos lineales regionalizados definidos en el punto 4, realice 300 simulaciones del proceso estocástico mediante kriging puntual ordinario para cada campaña. Asumiendo que ambas campañas fueron similares en cuanto al régimen de lluvias y la dinámica del acuífero elabore un mapa probabilístico que muestre la probabilidad de obtener rindes mayores a 9500 kg.ha-1 integrando la información de ambas campañas. Justifique todas las decisiones necesarias para elaborar este mapa. ¿Cuál es la superficie de este lote que tiene una probabilidad igual o mayor a 0.8 de alcanzar o superar el rinde umbral establecido?
+
+## Simulaciones del proceso estocástico
+
+# **Nota: ** Dado que para cada nodo visitado del set de datos el *algoritmo de simulación secuencial* simula un valor y este valor es agregado a los datos, el tiempo computacional requerido para realizar 300 simulaciones utilizando por defecto todos los puntos para cada nodo visitado es muy grande. Por eso se restringió a un radio de vecinos dado por todos los puntos encontrados a una distancia menor a $100 m$.
+
+# Interpolacion por Kriging Ordinario (KO)
+
+if(length(which(ls() == "KOSim.C1")) == 0) {
+  KOSim.C1 <- krige(formula = maizC1 ~ 1,
+                    locations = datosRindeMaiz[-c(NAs,outliersC1),],
+                    newdata = puntosPredecir,
+                    model = varMejorTeoC1,
+                    nsim = 300, maxdist = 100)
+}
+
+if(length(which(ls() == "KOSim.C2")) == 0) {
+  KOSim.C2 <- krige(formula = maizC2 ~ 1,
+                    locations = datosRindeMaiz[-outliersC2,],
+                    newdata = puntosPredecir,
+                    model = varMejorTeoC2,
+                    nsim = 300, maxdist = 100)
+}
+
+## Cálculo de probabilidad
+
+# Probabilidad de obtener rindes mayores a 9500 kg.ha-1 
+probRinde <- numeric()
+nroCeldas <- length(KOSim.C1$sim1)
+
+# Recorro los datos simulados
+for(i in 1:nroCeldas) {
+  
+  # Vectores
+  C1Mayor <- length(which(KOSim.C1@data[i,] > 9.5))
+  C2Mayor <- length(which(KOSim.C2@data[i,] > 9.5))
+  
+  # Condiciones
+  ifelse(test = C1Mayor != 0, yes = probC1 <- C1Mayor/300, no = probC1 <- 0)
+  ifelse(test = C2Mayor != 0, yes = probC2 <- C2Mayor/300, no = probC2 <- 0)
+  
+  # Calcular probabilidad
+  probRinde[i] <- (probC1 + probC2) / 2
+  
+}
+
+# Crear objeto espacial
+probRindeMayor9500 <- SpatialPointsDataFrame(coords = KOSim.C1@coords, 
+                                             data = data.frame("ID" = 1:nrow(KOSim.C1@coords),
+                                                               "Prob" = probRinde))
+# Plot
+spplot(probRindeMayor9500, zcol = "Prob", colorkey = TRUE,
+       main = "Probabilidad Rindes > 9500 kg.ha-1")
+
+# Visualizar como grilla
+probRindeMayor9500.grid <- SpatialPixelsDataFrame(points = puntosPredecir, 
+                                                  data = probRindeMayor9500@data)
+
+spplot(probRindeMayor9500.grid, main = "Probabilidad Rindes > 9500 kg.ha-1", 
+       zcol = "Prob", colorkey = TRUE)
+
+## Cálculo de superficie
+
+# La superficie estimada del lote que tiene una probabilidad igual o mayor a $0.8$ de alcanzar o superar el rinde umbral establecido fue de $88900 m^{2}$. Equivale a casi el $10\%$ ($9.82\%$) de la superficie total del lote. 
+
+# Consulto grilla creada anteriormente
+mayorProbUmbral <- probRindeMayor9500.grid[which(probRindeMayor9500.grid$Prob >= 0.8),]
+probRindeMayor9500.grid
+
+# Tamaño de grilla:
+mayorProbUmbral@grid@cellsize #10 metros por 10 metros (doble resolución original)
+
+# Cálcular superficie
+areaCelda <- 10*10
+cantidadCeldasCumplenCondicion <- length(mayorProbUmbral$Prob)
+areaTotalCeldasCumplenCondicion <- cantidadCeldasCumplenCondicion * areaCelda
+
+# Calcular porcentaje del lote
+areaTotalLote <- length(probRindeMayor9500.grid$ID) * areaCelda
+porcentajeAreaTotalCeldasCumplenCondicion <- (areaTotalCeldasCumplenCondicion/areaTotalLote)*100
+
+# Plot
+spplot(mayorProbUmbral, zcol = "Prob", colorkey = TRUE,
+       main = "Probabilidad > 0.8")

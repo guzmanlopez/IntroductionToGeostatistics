@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -268,7 +268,7 @@ Para los datos de *elevación* se observó dispersión de valores entorno a la m
 
 ### Tendencia central y dispersión 
 
-Para analizar cuantitativamente el rango, la tendencia central y la dispersión de los datos de rendimiento de maíz y covariables ambientales se creó una función personalizada llamada `ResumenEstadisticas`. Además se incluyó que dicha función retorne el tipo de clase de la variable en `R` y la cantidad de celdas vacías (`NA`).
+Para analizar cuantitativamente el rango, la tendencia central y la dispersión de los datos de *rendimiento de maíz* y covariables ambientales se creó una función personalizada llamada `ResumenEstadisticas`. Además se incluyó que dicha función retorne el tipo de clase de la variable en `R` y la cantidad de celdas vacías (`NA`).
 
 ```{r}
 
@@ -402,21 +402,19 @@ Se observaron dos celdas vacías para los datos de *rendimiento de maíz* de la 
 
 **Tendencia central**
 
-Los valores de la media ($\overline{z}$) y la mediana ($Md$) del *rendimiento de maíz* para la *campaña 1* fueron mayores que para la *campaña 2* ($\overline{z}_{Rm1} = 9.13 \ {t}.{ha}^{-1}$, $Md_{Rm1} = 8.86 \ {t}.{ha}^{-1}$ y $\overline{z}_{Rm2} = 7.55 \ {t}.{ha}^{-1}$, $Md_{Rm2} = 7.99 \ {t}.{ha}^{-1}$) mientras que el valor de la moda ($Mo$) fue de $Mo_{Rm1} = 7.00 \ {t}.{ha}^{-1}$ y $Mo_{Rm1} = 9.40 \ {t}.{ha}^{-1}$ respectivamente. 
+Los valores de la media ($\overline{z}$) y la mediana ($Md$) del *rendimiento de maíz* ($Rm$) para la *campaña 1* fueron mayores que para la *campaña 2* ($\overline{z}_{Rm1} = 9.13 \ {t}.{ha}^{-1}$, $Md_{Rm1} = 8.86 \ {t}.{ha}^{-1}$ y $\overline{z}_{Rm2} = 7.55 \ {t}.{ha}^{-1}$, $Md_{Rm2} = 7.99 \ {t}.{ha}^{-1}$) mientras que el valor de la moda ($Mo$) fue de $Mo_{Rm1} = 7.00 \ {t}.{ha}^{-1}$ y $Mo_{Rm1} = 9.40 \ {t}.{ha}^{-1}$ respectivamente. 
 
-Los valores de la media y la mediana de la *profundidad de la napa* para la *campaña 1* ($\overline{z} = 4.07 \ m$, $Md = 3.98 \ m$) fueron mayores que para la *campaña 2* ($\overline{z} = 3.44 \ m$, $Md = 3.31 \ m$) mientras que el valor de la moda fue de $3.69 \ m$ y $3.03 \ m$ respectivamente. 
+Los valores de la media y la mediana de la *profundidad de la napa* ($Pn$) para la *campaña 1* ($\overline{z}_{Pn1} = 4.07 \ m$, $Md_{Pn1} = 3.98 \ m$) fueron mayores que para la *campaña 2* ($\overline{z}_{Pn2} = 3.44 \ m$, $Md_{Pn2} = 3.31 \ m$) mientras que el valor de la moda fue de $3.69 \ m$ y $3.03 \ m$ respectivamente. 
 
-Los valores de la media, la mediana y la moda para la *elevación* fueron de $244.31 \ m$, $244.26 \ m$ y $242.77 \ m$ respectivamente. 
+Los valores de la media, la mediana y la moda para la *elevación* fueron de $\overline{z}_{Ele} = 244.31 \ m$, $Md_{Ele} 244.26 \ m$ y $Mo_{Ele} 242.77 \ m$ respectivamente. 
 
 **Dispersión**
 
-El rango (${R} = x_{min},x_{max}$) de la variable del *rendimiento de maíz* para la *campaña 1* fue mayor y con valores más altos y más bajos que para la *campaña 2* ($R_{Rm1} = 0.9800 \ {t}.{ha}^{-1},\ 17.0850 \ {t}.{ha}^{-1}$, $R_{Rm2} = 1.9381 \ {t}.{ha}^{-1},\ 12.2521 \ {t}.{ha}^{-1}$), para la variable *profundidad de napa* el rango fue similar para las dos campañas($R_{Pn1} = 2.12 \ m,\ 6.66 \ m$, $R_{Pn2} = 1.63 \ m,\ 6.06 \ m$) y el rango de la *elevación* fue de $R_{El} = 241.91 \ m,\ 247.50 \ m$.  
-
-Los valores de la varianza y la mediana del *rendimiento de maíz* para la *campaña 1* 
+El rango (${R} = x_{min},x_{max}$) de la variable del *rendimiento de maíz* para la *campaña 1* fue mayor y con valores más altos y más bajos que para la *campaña 2* ($R_{Rm1} = 0.9800 \ {t}.{ha}^{-1},\ 17.0850 \ {t}.{ha}^{-1}$, $R_{Rm2} = 1.9381 \ {t}.{ha}^{-1},\ 12.2521 \ {t}.{ha}^{-1}$), para la variable *profundidad de napa* el rango fue similar para las dos campañas($R_{Pn1} = 2.12 \ m,\ 6.66 \ m$, $R_{Pn2} = 1.63 \ m,\ 6.06 \ m$) y el rango de la *elevación* fue de $R_{Ele} = 241.91 \ m,\ 247.50 \ m$.  
 
 ## Normalidad
 
-Para analizar la normalidad de las variables se realizó la prueba de normalidad de Shapiro-Wilk. La hipótesis nula de la prueba de Shapiro-Wilk es que los datos son normales, por lo cual un *p-valor* significativo indicó que se rechazó la hipótesis nula, es decir que la variable analizada fuese normal.
+Para analizar la normalidad de las variables se realizó la prueba de normalidad de *Shapiro-Wilk*. La hipótesis nula de la prueba de *Shapiro-Wilk* es que los datos son normales, por lo cual un *p-valor* significativo indicó que se rechazó la hipótesis nula, es decir que la variable analizada fuese normal.
 
 ```{r}
 
@@ -437,11 +435,11 @@ shapiro.test(datosRindeMaiz$maizC2)
 
 ```
 
-Para el *rendimiento de maíz* y las covariables ambientales se rechazó la hipótesis nula de la prueba de normalidad de Shapiro-Wilk. 
+Para el *rendimiento de maíz* y las covariables ambientales se rechazó la hipótesis nula de la prueba de normalidad de *Shapiro-Wilk*. 
 
 ## Transformaciones
 
-Se transformó los datos originales a nuevas escalas para acercarlos a una distribución normal. Se probaron las transformaciones logarítmicas, raíz cuadrada y Box-Cox.
+Se transformó los datos originales a nuevas escalas para acercarlos a una distribución normal. Se probaron las transformaciones *logarítmica*, *raíz cuadrada* y *Box-Cox*.
 
 ```{r}
 
@@ -522,7 +520,7 @@ shapiro.test(maizC2BC)
 
 ```
 
-Ninguna de las transformaciones de los datos permitió que se pudiera fallar en rechazar la hipótesis nula de normalidad del test de Shapiro-Wilk. 
+Ninguna de las transformaciones de los datos permitió que se pudiera fallar en rechazar la hipótesis nula de normalidad del test de *Shapiro-Wilk*. 
 
 ## Q-Q Plots
 
@@ -688,7 +686,7 @@ A partir del análisis de los Q-Q plots (cuantiles - cuantiles) se observó que 
 
 ## Análisis de tendencias
 
-Para analizar si existen tendencias entre el rendimiento de maíz y las covariables ambientales se realizaron gráficos de dispersión de puntos junto con lineas basadas en suavizados de la medias locales de los valores. 
+Para analizar si existen tendencias entre el *rendimiento de maíz* y las covariables ambientales se realizaron gráficos de dispersión de puntos junto con lineas basadas en suavizados de la medias locales de los valores. 
 
 ```{r, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
 
@@ -763,7 +761,7 @@ grid.arrange(ggTend_MaizC1VsLong, ggTend_MaizC1VsLat,
              )
 ```
 
-A partir de los gráficos de dispersión y suavizado de medias, no se observó una tendencia entre el rendimiento de maíz y la latitud o longitud. Sin embargo, se observaron tendencias negativas entre el rendimiento de maíz y la elevación y también con la profundidad de la napa para las dos campañas. Se observó que el rendimiento de maíz decrece con la elevación del terreno y la profundidad de la napa. Asimismo, se observó una tendencia positiva entre la profundidad de la napa y la elevación. 
+A partir de los gráficos de dispersión y suavizado de medias, no se observó una tendencia entre el *rendimiento de maíz* y la *latitud* o *longitud*. Sin embargo, se observaron tendencias negativas entre el *rendimiento de maíz* y la *elevación* y también con la *profundidad de la napa* para las dos campañas. Se observó que el *rendimiento de maíz* decrece con la *elevación* del terreno y la *profundidad de la napa*. Asimismo, se observó una tendencia positiva entre la *profundidad de la napa* y la *elevación*. 
 
 ## Correlación
 
@@ -849,13 +847,13 @@ corrgram(data.frame("Rend.maíz" = datosRindeMaiz@data$maizC2,
 ```
 
 
-Se observó que la correlación entre el rendimiento de maíz con la latitud y la longitud fueron bajas ($0 < r < 0.35$), confirmando una tendencia despreciable. Por otro lado, se observó que la correlación fue alta para el rendimiento de maíz con la Elevación ($r_{C1} = -0.56$ y $r_{C2} = -0.73$) y aún fue mayor para la Profundidad de la napa ($r_{C1} = -0.86$ y $r_{C2} = -0.84$). Se confirmó que existe una tendencia negativa entre el rendimiento de maíz y la elevación y entre el rendimiento de maíz y la profundidad de la napa. También se observó que existe una correlación positiva entre la profundidad de la napa y la elevación ($r_{C1} = 0.67$ y $r_{C2} = 0.74$)
+Se observó que la correlación entre el *rendimiento de maíz* con la *latitud* y la *longitud* fueron bajas ($0 < r < 0.35$), confirmando una tendencia despreciable. Por otro lado, se observó que la correlación fue alta para el *rendimiento de maíz* con la *elevación* ($r_{C1} = -0.56$ y $r_{C2} = -0.73$) y aún fue mayor para la *profundidad de la napa* ($r_{C1} = -0.86$ y $r_{C2} = -0.84$). Se confirmó que existe una tendencia negativa entre el *rendimiento de maíz* y la *elevación* y entre el *rendimiento de maíz* y la *profundidad de la napa*. También se observó que existe una correlación positiva entre la *profundidad de la napa* y la *elevación* ($r_{C1} = 0.67$ y $r_{C2} = 0.74$)
 
-Para definir el modelo de tendencia del rendimiento de maíz, se evaluaron tres modelos de regresiones lineales: 
+Para definir el modelo de tendencia del *rendimiento de maíz*, se evaluaron tres modelos de regresiones lineales: 
 
-1. Modelo de tendencia basado en una regresión lineal múltiple del rendimiento de maíz con la profundidad de la napa y la elevación.
-2. Modelo de tendencia basado en una regresión lineal simple del rendimiento de maíz con la profundidad de la napa.
-3. Modelo de tendencia basado en una regresión lineal simple del rendimiento de maíz con la elevación.
+1. Modelo de tendencia basado en una regresión lineal múltiple del *rendimiento de maíz* con la *profundidad de la napa* y la *elevación*.
+2. Modelo de tendencia basado en una regresión lineal simple del *rendimiento de maíz* con la *profundidad de la napa*.
+3. Modelo de tendencia basado en una regresión lineal simple del *rendimiento de maíz* con la *elevación*.
 
 Se utilizó el criterio de información de Akaike ($AIC$) para definir el modelo (a menor $AIC$ mejor ajuste).
 
@@ -879,7 +877,7 @@ AIC(ajusteC2.M1, ajusteC2.M2, ajusteC2.M3)
 
 ```
 
-El mejor modelo de tendencia para las dos campañas del rendimiento de maíz según el criterio de información de Akaike fue el de regresión múltiple ($y = \beta_{1}x_{1} + \beta_{2}x_{1} + \beta_{0}$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
+El mejor modelo de tendencia para las dos campañas del *rendimiento de maíz* según el criterio de información de Akaike fue el de regresión múltiple ($y = \beta_{1}x_{1} + \beta_{2}x_{1} + \beta_{0}$). Además, se calcularon métricas para conocer la importancia relativa de cada una de las variables en el modelo. 
 
 ```{r, fig.height=8, fig.width=8}
 
@@ -905,7 +903,7 @@ plot(impRel.C2.M1)
 
 ```
 
-La varianza explicada por el modelo elegido fue de $73.91 \%$ y de $72.96 \%$ para C1 y para C2 respectivamente. Se observó que la profundidad de la napa tuvo una importancia relativa mayor en el modelo de tendencia elegido que la elevación. Además, dicha observación fue más acentuada para la C1 que para la C2.  
+La varianza explicada por el modelo elegido fue de $73.91 \%$ y de $72.96 \%$ para C1 y para C2 respectivamente. Se observó que la *profundidad de la napa* tuvo una importancia relativa mayor en el modelo de tendencia elegido que la *elevación*. Además, dicha observación fue más acentuada para la C1 que para la C2.  
 
 
 ```{r}
@@ -933,7 +931,7 @@ datosRindeMaiz$resAjusteC2.M1 <- residuals(ajusteC2.M1)
 
 ## Autocorrelación espacial
 
-Para examinar patrones de autocorrelación espacial se realizaron correlogramas espaciales basados en el índice de Moran ($I$) para los residuales del modelo de tendencia elegido del rendimiento de maíz. El color azul muestra autocorrelación espacial positiva mientras que el color rojo muestra autocorrelación espacial negativa.
+Para examinar patrones de autocorrelación espacial se realizaron correlogramas espaciales basados en el índice de Moran ($I$) para los residuales del modelo de tendencia elegido del *rendimiento de maíz*. El color azul muestra autocorrelación espacial positiva mientras que el color rojo muestra autocorrelación espacial negativa.
 
 ```{r, message=FALSE, warning=FALSE}
 
@@ -957,7 +955,7 @@ moranRendMaizC2 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long,
 
 ```
 
-En los correlogramas se observó una baja correlación espacial positiva hasta los $150 - 200 m$. A partir de esa distancia la correlación espacial fue aleatoria (valores entorno a cero). Para la $C2$ se observó un valor muy alto correlación positiva para distancias mayores a $1200 m$ que pudo deberse a la presencia de valores atípicos y/o a un $n$ bajo para esa clase de distancia ($n_{14} = 96$).    
+En los correlogramas se observó una baja correlación espacial positiva hasta los $150 m - 200 m$. A partir de esa distancia la correlación espacial fue aleatoria (valores entorno a cero). Para la C2 se observó un valor muy alto correlación positiva para distancias mayores a $1200 m$ que pudo deberse a la presencia de valores atípicos y/o a un $n$ bajo para esa clase de distancia ($n_{14} = 96$).    
 
 ```{r, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 # Plot correlograma 
@@ -1138,7 +1136,7 @@ spplot(datosRindeMaiz, zcol = c("resAjusteC2.M1.SinOut", "resAjusteC2.M1"),
 
 ## Cambios en la media
 
-Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") de los datos originales de rendimiento de maíz y las covariables ambientales.
+Para observar los cambios en la media dentro del lote se realizaron mapas de puntos ("posting") de los datos originales de *rendimiento de maíz* y las covariables ambientales. No se observaron cambios importantes en la media (valores atípicos) para las covariables ambientales. Sin embargo, para el *rendimiento de maíz* se observaron camnbios en la media y algunos fueron eliminados mediante la detección de outliers. Por ejemplo, se observó valores diferentes a los vecinos siguiendo un patrón de línea.   
 
 ```{r, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 
@@ -1155,7 +1153,7 @@ spplot(obj = datosRindeMaiz, zcol = c("NapaDicC1", "NapaDicC2"),
 
 ```
 
-```{r, fig.height=8, fig.width=5, message=FALSE, warning=FALSE}
+```{r, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
 # Mapa de puntos de la elevación del lote
 spplot(obj = datosRindeMaiz, zcol = "Elev",
        main = "Elevación (m)", colorkey = TRUE)
@@ -1258,7 +1256,7 @@ plot(varOmniC2, xlab = "distancia", ylab = "semivarianza",
 
 ## Proceso espacial: isotropía y anisotropía
 
-A partir de analizar los variogramas direccionales se concluyó que el proceso espacial en las dos campañas es isotrópico. No se observaron diferencias aparentes en los valores de la semivarianza para la cual la misma se estabiliza al alcanzar una meseta ($\gamma_{C1} = ~ 1.7$ $\gamma_{C2} = ~ 0.7$) ni tampoco a la distancia a la cual se llega a $\gamma$ ($h_{C1} = ~ 200$ y $h_{C2} = ~ 200$) para las distintas direcciones en el espacio ($0^{\circ}, 45^{\circ}, 90^{\circ} y 135^{\circ}$). 
+A partir de analizar los variogramas direccionales se concluyó que el proceso espacial en las dos campañas es isotrópico. No se observaron diferencias aparentes en los valores de la semivarianza para la cual la misma se estabiliza al alcanzar una meseta ($\gamma_{C1} = ~ 1.7$ $\gamma_{C2} = ~ 0.7$) ni tampoco a la distancia a la cual se llega a $\gamma$ ($h_{C1} = ~ 100$ y $h_{C2} = ~ 100$) para las distintas direcciones en el espacio ($0^{\circ}, 45^{\circ}, 90^{\circ} y 135^{\circ}$). 
 
 ### Con librería `geoR`
 
@@ -1519,7 +1517,7 @@ print(AICmodelosC2)
 
 ```
 
-Para las dos campañas, el mejor ajuste del modelo de variograma teórico a los datos fue para el *Exponencial*. Se eligió dicho modelo debido a que el que presentó el $AIC$ más bajo ($AIC_{C1} = 1317.886$ y $AIC_{C2} = 979.6216$) comparando en cada caso frente a los modelos *Esférico* ($AIC_{C1} = 1331.098$ y $AIC_{C2} = 994.0059$) y *Circular* ($AIC_{C1} = 1359.595$ y $AIC_{C2} = 1024.4368$).
+Para las dos campañas, el mejor ajuste del modelo de variograma teórico a los datos fue para el *Exponencial*. Se eligió dicho modelo debido a que presentó el $AIC$ más bajo ($AIC_{C1} = 1317.886$ y $AIC_{C2} = 979.6216$) comparando en cada caso frente a los modelos *Esférico* ($AIC_{C1} = 1331.098$ y $AIC_{C2} = 994.0059$) y *Circular* ($AIC_{C1} = 1359.595$ y $AIC_{C2} = 1024.4368$).
 
 ```{r, fig.height=6, fig.width=12, message=TRUE, warning=FALSE}
 
@@ -1605,7 +1603,6 @@ intOK.C1 <- krige(formula = maizC1 ~ 1,
                   locations = datosRindeMaiz[-c(NAs, outliersC1),],
                   newdata = puntosPredecir,
                   model = varMejorTeoC1)
-
 }
 
 # Predicho
@@ -1703,7 +1700,7 @@ spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var
 
 ## Validación cruzada
 
-Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que para la C1. Sin embargo, se observó una buena predicción para las dos campañas como resumen los indicadores según el valor esperado en la tabla a continuación.
+Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que para la C1. Sin embargo, se observó una buena predicción para las dos campañas como resumen los indicadores según el valor esperado en la tabla que se imprime más abajo.
 
 ```{r, fig.height=10, fig.width=12, message=TRUE, warning=FALSE}
 
@@ -1872,23 +1869,27 @@ La superficie estimada del lote que tiene una probabilidad igual o mayor a $0.8$
 
 ```{r}
 
-# ¿Cuál es la superficie de este lote que tiene una probabilidad igual o mayor a 0.8 de alcanzar o superar el rinde umbral establecido?
-
 # Consulto grilla creada anteriormente
 mayorProbUmbral <- probRindeMayor9500.grid[which(probRindeMayor9500.grid$Prob >= 0.8),]
 probRindeMayor9500.grid
 
 # Tamaño de grilla:
-mayorProbUmbral@grid@cellsize #10 metros por 10 metros (doble resolución original)
+mayorProbUmbral@grid@cellsize #10 metros por 10 metros
 
 # Cálcular superficie
 areaCelda <- 10*10
 cantidadCeldasCumplenCondicion <- length(mayorProbUmbral$Prob)
-areaTotalCeldasCumplenCondicion <- cantidadCeldasCumplenCondicion * areaCelda
+areaTotal <- cantidadCeldasCumplenCondicion * areaCelda
+paste("Área total que cumple condición: ",
+      areaTotal, " m2",
+      sep = "")
 
 # Calcular porcentaje del lote
 areaTotalLote <- length(probRindeMayor9500.grid$ID) * areaCelda
 porcentajeAreaTotalCeldasCumplenCondicion <- (areaTotalCeldasCumplenCondicion/areaTotalLote)*100
+paste("Porcentaje del Área total del lote que cumple condición: ",
+      round(porcentajeAreaTotalCeldasCumplenCondicion, digits = 2), " %",
+      sep = "")
 
 # Plot
 spplot(mayorProbUmbral, zcol = "Prob", colorkey = TRUE,
