@@ -920,7 +920,7 @@ datosRindeMaiz$resAjusteC2.M1 <- residuals(ajusteC2.M1)
 
 ## Autocorrelación espacial
 
-Para examinar patrones de autocorrelación espacial se realizaron correlogramas espaciales basados en el índice de Moran ($I$) para el rendimiento de maíz. El color azul muestra autocorrelación espacial positiva mientras que el color rojo muestra autocorrelación espacial negativa.
+Para examinar patrones de autocorrelación espacial se realizaron correlogramas espaciales basados en el índice de Moran ($I$) para los residuales del modelo de tendencia elegido del rendimiento de maíz. El color azul muestra autocorrelación espacial positiva mientras que el color rojo muestra autocorrelación espacial negativa.
 
 ```{r, message=FALSE, warning=FALSE}
 
@@ -943,6 +943,8 @@ moranRendMaizC2 <- correlog(x = as.data.frame(datosRindeMaiz@coords)$Long,
                             na.rm = TRUE)
 
 ```
+
+En los correlogramas se observó una baja correlación espacial positiva hasta los $150 - 200 m$. A partir de esa distancia la correlación espacial fue aleatoria (valores entorno a cero). Para la $C2$ se observó un valor muy alto correlación positiva para distancias mayores a $1200 m$ que pudo deberse a la presencia de valores atípicos y/o a un $n$ bajo para esa clase de distancia ($n_{14} = 96$).    
 
 ```{r, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 # Plot correlograma 
@@ -1142,33 +1144,38 @@ spplot(obj = datosRindeMaiz, zcol = "Elev", main = "Elevación (m)", colorkey = 
 
 A partir del análisis de los variogramas empíricos puede decirse que existe estructura espacial para las dos campañas ya que:
 
-1. la semivarianza ($\gamma$) aumenta con la distancia hasta llegar a una meseta o plateau, que implica que la dependencia espacial va disminuyendo con la distancia hasta alcanzar la independencia espacial. 
-2. al utilizar los residuales de un modelo de tendencia se descarta cualquier efecto de dependencia espacial debido a la tendencia.
+1. la semivarianza ($\gamma$) aumenta con la distancia hasta llegar a una meseta, que implica que la dependencia espacial va disminuyendo con la distancia hasta alcanzar la independencia espacial. 
+2. al utilizar los residuales de un modelo de tendencia se descarta cualquier efecto de dependencia espacial debido a la misma.
+
+**Nota:** dado que para estimar los parámetros de ajuste de los modelos teóricos a los variogramas empíricos mediante métodos cuantitativos (*Pregunta 3*) se utilizará la librería `geoR` y para realizar los modelos de predicción-interpolación(*Pregunta 4*), validación cruzada (*Pregunta 5*) y simulaciones (*Pregunta 6*) se utilizará la librería `gstat`, se incluyen los variogramas empíricos y direccionales utilizando las dos librerías (requisitos necesarios de creación de objetos para poder utilizar una y otra librería en las siguientes respuestas).  
+
+### Con librería `geoR`
 
 ```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
 
-# Con geoR:
+# Con librería geoR:
+
 dfC1 <- data.frame(as.data.frame(datosRindeMaiz@coords), 
-                   "ID" = datosRindeMaiz$ID,
                    "Elev" = datosRindeMaiz$Elev,
                    "NapaDicC1" = datosRindeMaiz$NapaDicC1,
-                   "maizC1" = datosRindeMaiz$maizC1,
-                   "resAjusteC1.M1.SinOut" = datosRindeMaiz$resAjusteC1.M1.SinOut)
+                   "maizC1" = datosRindeMaiz$maizC1)
 
 dfC2 <- data.frame(as.data.frame(datosRindeMaiz@coords), 
-                   "ID" = datosRindeMaiz$ID,
                    "Elev" = datosRindeMaiz$Elev,
                    "NapaDicC2" = datosRindeMaiz$NapaDicC2,
-                   "maizC2" = datosRindeMaiz$maizC2,
-                   "resAjusteC2.M1.SinOut" = datosRindeMaiz$resAjusteC2.M1.SinOut)
+                   "maizC2" = datosRindeMaiz$maizC2)
 
-# Sacar outliers
-dfC1 <- dfC1[-outliersC1,]
+# Sacar outliers y NAs
+dfC1 <- dfC1[-c(NAs, outliersC1),]
 dfC2 <- dfC2[-outliersC2,]
 
-# Objeto geodata
-geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 6, covar.col = c(4,5))
-geodataC2 <- as.geodata(obj = dfC2, coords.col = 1:2, data.col = 6, covar.col = c(4,5))
+# Tomar muestra para fit variogram
+dfC1 <- dfC1[sample(as.numeric(rownames(dfC1)), 500),]
+dfC2 <- dfC2[sample(as.numeric(rownames(dfC2)), 500),]
+
+# Objetos geodata
+geodataC1 <- as.geodata(obj = dfC1, coords.col = 1:2, data.col = 5, covar.col = c(3,4))
+geodataC2 <- as.geodata(obj = dfC2, coords.col = 1:2, data.col = 5, covar.col = c(3,4))
 
 # Crear variograma empírico con el modelo de tendencia elegido
 varGeoC1 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
@@ -1176,19 +1183,58 @@ varGeoC1 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodata
 varGeoC2 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
                    max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
 
-# Plot variogramas
+# Plot variogramas empíricos
 par(mfrow = c(1,2))
 plot(varGeoC1, pch = 19, col = "#0080FF", ylab = "semivarianza", xlab = "distancia", main = "C1")
 plot(varGeoC2, pch = 19, col = "#0080FF", ylab = "semivarianza", xlab = "distancia", main = "C2")
 par(mfrow = c(1,1))
 
 ```
+### Con librería `gstat`
+
+```{r}
+
+# Con librería gstat:
+
+# Nota: se utiliza la fórmula "maizC1 ~ NapaDicC1 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC1.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
+
+# Crear variograma empírico omnidireccional - C1
+varOmniC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
+                       data = datosRindeMaiz[-c(NAs, outliersC1),],
+                       width = 20, cutoff = 400)
+
+# Plotear variograma
+plot(varOmniC1, xlab = "distancia", ylab = "semivarianza",
+     main = "Variograma empírico - C1", pch = 19)
+
+```
+
+```{r}
+
+# Con librería gstat:
+
+# Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
+
+# Crear variograma empírico omnidireccional - C2
+varOmniC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
+                       data = datosRindeMaiz[-outliersC2,],
+                       width = 20, cutoff = 400)
+
+# Plotear variograma
+plot(varOmniC2, xlab = "distancia", ylab = "semivarianza",
+     main = "Variograma empírico - C2", pch = 19)
+
+```
 
 ## Proceso espacial: isotropía y anisotropía
 
-A partir de analizar los variogramas direccionales se concluyó que el proceso espacial en las dos campañas es isotrópico. No se observaron diferencias aparentes en los valores de la semivarianza para la cual la misma se estabiliza al alcanzar una meseta ($\gamma_{C1} = ~ 1.7$ $\gamma_{C2} = ~ 0.7$) ni tampoco a la distancia a la cual se llega a $\gamma$ ($distancia_{C1} = ~ 200$ y $distancia_{C2} = ~ 200$) para las distintas direcciones en el espacio ($0^{\circ}, 45^{\circ}, 90^{\circ} y 135^{\circ}$). 
+A partir de analizar los variogramas direccionales se concluyó que el proceso espacial en las dos campañas es isotrópico. No se observaron diferencias aparentes en los valores de la semivarianza para la cual la misma se estabiliza al alcanzar una meseta ($\gamma_{C1} = ~ 1.7$ $\gamma_{C2} = ~ 0.7$) ni tampoco a la distancia a la cual se llega a $\gamma$ ($h_{C1} = ~ 200$ y $h_{C2} = ~ 200$) para las distintas direcciones en el espacio ($0^{\circ}, 45^{\circ}, 90^{\circ} y 135^{\circ}$). 
+
+### Con librería `geoR`
 
 ```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
+
+# Con librería geoR:
 
 # Crear variogramas direccionales
 varGeoC1dir0 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
@@ -1204,11 +1250,10 @@ varGeoC1dir135 <- variog(geodataC1, trend = trend.spatial(data~NapaDicC1+Elev, g
                       direction = 135, tolerance = 45/2, unit.angle = "degrees",
                       max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
 
-# Plot variogramas direccionales 
-# C1
+# Plot variogramas direccionales - C1
 par(mfrow = c(2,2))
 plot(varGeoC1dir0, pch = 19, col = "#0080FF", ylim = c(0,2), 
-     ylab = "semivarianza", xlab = "distancia", main = "0 grado")
+     ylab = "semivarianza", xlab = "distancia", main = "0 grados")
 grid()
 plot(varGeoC1dir45, pch = 19, col = "#0080FF", ylim = c(0,2), 
      ylab = "semivarianza", xlab = "distancia", main = "45 grados")
@@ -1225,6 +1270,8 @@ par(mfrow = c(1,1))
 
 ```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
 
+# Con librería geoR:
+
 # Crear variogramas direccionales
 varGeoC2dir0 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, geodataC2), 
                       direction = 0, tolerance = 45/2, unit.angle = "degrees",
@@ -1239,11 +1286,10 @@ varGeoC2dir135 <- variog(geodataC2, trend = trend.spatial(data~NapaDicC2+Elev, g
                       direction = 135, tolerance = 45/2, unit.angle = "degrees",
                       max.dist = 400, breaks = seq(from = 0, to = 500, by = 20))
 
-# Plot variogramas direccionales 
-# C2
+# Plot variogramas direccionales - C2
 par(mfrow = c(2,2))
 plot(varGeoC2dir0, pch = 19, col = "#0080FF", ylim = c(0,1), 
-     ylab = "semivarianza", xlab = "distancia", main = "0 grado")
+     ylab = "semivarianza", xlab = "distancia", main = "0 grados")
 grid()
 plot(varGeoC2dir45, pch = 19, col = "#0080FF", ylim = c(0,1), 
      ylab = "semivarianza", xlab = "distancia", main = "45 grados")
@@ -1258,7 +1304,37 @@ par(mfrow = c(1,1))
 
 ```
 
-La dependencia espacial no difiere entre campañas, ya que la distancia a la cual se llega a $\gamma$ ($distancia_{C1} = ~ 200$ y $distancia_{C2} = ~ 200$) es aproximadamente la misma para las dos campañas. 
+### Con librería `gstat`
+
+```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
+
+# Con librería gstat:
+
+# Crear variograma empírico direccional - C1
+varDirC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
+                      data = datosRindeMaiz[-c(NAs,outliersC1),],
+                      width = 20, cutoff = 400,
+                      alpha = c(0,45,90,135))
+
+# Plotear variograma
+plot(varDirC1, xlab = "distancia", ylab = "semivarianza", main = "C1", pch = 19)
+
+```
+
+```{r, fig.height=8, fig.width=8, message=FALSE, warning=FALSE}
+
+# Con gstat:
+varDirC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
+                      data = datosRindeMaiz[-outliersC2,],
+                      width = 20, cutoff = 400,
+                      alpha = c(0,45,90,135))
+
+# Plotear variograma
+plot(varDirC2, xlab = "distancia", ylab = "semivarianza", main = "C2", pch = 19)
+
+```
+
+La dependencia espacial no difiere entre campañas, ya que la distancia ($h$) a la cual se llega a $\gamma$ ($h_{C1} = ~ 200$ y $h_{C2} = ~ 200$) es aproximadamente la misma para las dos campañas. 
 
 # Respuesta 3
 
@@ -1266,56 +1342,158 @@ La dependencia espacial no difiere entre campañas, ya que la distancia a la cua
 
 ## Ajustar modelos a variograma
 
+Se ajustaron los modelos *esférico*, *exponencial* y *circular* a los variogramas empíricos obtenidos para cada una de las campañas mediante estimación de parámetros por el método de *Máxima versoimilitud restringida (REML)*. Se utilizó para ello la librería `geoR` debido a que presenta la función `likfit` que permite estimar los parámetros necesarios (*rango*, *meseta* y *pepita*) para ajustar un modelo de variograma teórico al variograma empírico y seguir un criterio cuantitativo para seleccionar el mejor modelo. La librería `gstat` posee la función `fit.variogram.reml` que cumple con lo anterior pero solo estima el *rango*. También se probó la función `fit.variogram.gls` pero no es eficaz para muchos datos y requería de un muestreo aleatorio (trabajar con una submuestra) sobre los datos originales. 
+
 ```{r}
 
-# Likelihood Based Parameter Estimation for Gaussian Random Fields
-# Default Maximum Likelihood
+load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
 
-# Matriz de posibles parámetros iniciales de rango y meseta
-iniCovPars <- cbind("sigma" = rep(seq(1.5, 2.2, length.out = 10), 2), 
-                    "phi" = c(seq(200, 300, length.out = 10), rev(seq(200, 300, length.out = 10))))
+# Matriz de posibles parámetros iniciales de rango y meseta para C1
+iniCovParsC1 <- cbind("sigma" = seq(1,3,length.out = 20),
+                      "phi" = seq(60,240,length.out = 20))
 
-iniCovPars <- as.matrix(iniCovPars)
+iniCovParsC1 <- as.matrix(iniCovParsC1) # convertir a matriz
 
-# likfitVarGeoC1.exp <- likfit(geodataC1, 
-#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-#                              ini.cov.pars = iniCovPars,
-#                              fix.nugget = TRUE,
-#                              nugget = 0,
-#                              cov.model = "exponential", 
-#                              lik.method = "ML")
-# 
-# likfitVarGeoC1.sph <- likfit(geodataC1, 
-#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-#                              ini.cov.pars = iniCovPars,
-#                              limits = pars.limits(phi = c(200,250), sigmasq = c(1.7,1.9)), 
-#                              fix.nugget = TRUE,
-#                              nugget = 0,
-#                              cov.model = "spherical", 
-#                              lik.method = "ML")
-# 
-# likfitVarGeoC1.powexp <- likfit(geodataC1, 
-#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
-#                              ini.cov.pars = iniCovPars,
-#                              fix.nugget = TRUE,
-#                              fix.kappa = FALSE,
-#                              nugget = 0,
-#                              cov.model = "powered.exponential", 
-#                              lik.method = "ML")
+# Ajuste modelo esférico
+likfitVarGeoC1.sph <- likfit(geodataC1,
+                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                             ini.cov.pars = iniCovParsC1,
+                             limits = pars.limits(phi = c(50,250), sigmasq = c(0.5,3.5)),
+                             fix.nugget = FALSE,
+                             cov.model = "spherical",
+                             lik.method = "REML")
 
-# Ajuste del modelo
-plot(varGeoC1,
-     ylab = "semivarianza", 
+# Ajuste modelo exponencial
+likfitVarGeoC1.exp <- likfit(geodataC1,
+                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                             ini.cov.pars = iniCovParsC1,
+                             limits = pars.limits(phi = c(50,250), sigmasq = c(0.5,3.5)),
+                             fix.nugget = TRUE,
+                             nugget = 0,
+                             cov.model = "exponential",
+                             lik.method = "REML")
+
+# Ajuste modelo circular
+likfitVarGeoC1.cir <- likfit(geodataC1,
+                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                             ini.cov.pars = iniCovParsC1,
+                             limits = pars.limits(phi = c(50,250), sigmasq = c(0.5,3.5)),
+                             fix.nugget = TRUE,
+                             nugget = 0,
+                             cov.model = "circular",
+                             lik.method = "REML")
+
+# Plot variograma empírico + modelos
+plot(varGeoC1, main = "C1", ylab = "semivarianza", 
      xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,4))
-lines.variomodel(likfitVarGeoC1.exp, col = "red")
-lines.variomodel(likfitVarGeoC1.sph, col = "red", lty = 2)
-lines.variomodel(likfitVarGeoC1.powexp, col = "red", lty = 5)
+lines.variomodel(likfitVarGeoC1.sph, col = "red", lty = 1)
+lines.variomodel(likfitVarGeoC1.exp, col = "red", lty = 2)
+lines.variomodel(likfitVarGeoC1.cir, col = "red", lty = 3)
 grid()
+legend('topleft', lty = c(1,2,3), legend = c('Esf','Exp','Cir'), col = rep("red", 3))
+
+```
+
+```{r}
 
 # Selección de modelo por criterio de información de Akaike
-likfitVarGeoC1.exp$AIC
-likfitVarGeoC1.sph$AIC
-likfitVarGeoC1.powexp$AIC
+AICmodelosC1 <- data.frame("Modelo" = c('Esférico','Exponencial','Circular'),
+                           "AIC" = c(likfitVarGeoC1.sph$AIC,
+                                     likfitVarGeoC1.exp$AIC,
+                                     likfitVarGeoC1.cir$AIC))
+print(AICmodelosC1)
+
+```
+
+```{r}
+
+load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
+
+# Matriz de posibles parámetros iniciales de rango y meseta para C1
+iniCovParsC2 <- cbind("sigma" = seq(0.5,1,length.out = 20),
+                      "phi" = seq(100,300,length.out = 20))
+
+iniCovParsC2 <- as.matrix(iniCovParsC2) # convertir a matriz
+
+# Ajuste modelo esférico
+likfitVarGeoC2.sph <- likfit(geodataC2,
+                             trend = trend.spatial(data~NapaDicC2+Elev, geodataC2),
+                             ini.cov.pars = iniCovParsC2,
+                             limits = pars.limits(phi = c(90,310), sigmasq = c(0.4,1.1)),
+                             fix.nugget = TRUE, 
+                             nugget = 0,
+                             cov.model = "spherical",
+                             lik.method = "REML")
+
+# Ajuste modelo exponencial
+likfitVarGeoC2.exp <- likfit(geodataC2,
+                             trend = trend.spatial(data~NapaDicC2+Elev, geodataC2),
+                             ini.cov.pars = iniCovParsC2,
+                             limits = pars.limits(phi = c(90,310), sigmasq = c(0.4,1.1)),
+                             fix.nugget = TRUE, 
+                             nugget = 0,
+                             cov.model = "exponential",
+                             lik.method = "REML")
+
+# Ajuste modelo circular
+likfitVarGeoC2.cir <- likfit(geodataC2,
+                             trend = trend.spatial(data~NapaDicC2+Elev, geodataC2),
+                             ini.cov.pars = iniCovParsC2,
+                             limits = pars.limits(phi = c(90,310), sigmasq = c(0.4,1.1)),
+                             fix.nugget = TRUE, 
+                             nugget = 0,
+                             cov.model = "circular",
+                             lik.method = "REML")
+
+# Plot variograma empírico + modelos
+plot(varGeoC2, main = "C2", ylab = "semivarianza", 
+     xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,2))
+lines.variomodel(likfitVarGeoC2.sph, col = "red", lty = 1)
+lines.variomodel(likfitVarGeoC2.exp, col = "red", lty = 2)
+lines.variomodel(likfitVarGeoC2.cir, col = "red", lty = 3)
+grid()
+legend('topleft', lty = c(1,2,3), legend = c('Esf','Exp','Cir'), col = rep("red", 3))
+
+```
+
+```{r}
+
+# Selección de modelo por criterio de información de Akaike
+AICmodelosC2 <- data.frame("Modelo" = c('Esférico','Exponencial','Circular'),
+                           "AIC" = c(likfitVarGeoC2.sph$AIC,
+                                     likfitVarGeoC2.exp$AIC,
+                                     likfitVarGeoC2.cir$AIC))
+print(AICmodelosC2)
+
+```
+
+
+
+```{r}
+
+varMejorTeoC1 <- vgm(psill = likfitVarGeoC1.exp$sigmasq, 
+                     model = "Exp", 
+                     range = likfitVarGeoC1.exp$phi,
+                     nugget = 0)
+
+varMejorTeoC2 <- vgm(psill = likfitVarGeoC2.exp$sigmasq, 
+                     model = "Exp", 
+                     range = likfitVarGeoC2.exp$phi,
+                     nugget = 0)
+
+# Plotear variograma experimental y ajuste modelo teórico - C1
+plot(x = varOmniC1$dist, y = varOmniC1$gamma, main = "Modelos - C1",
+     col = "#0080FF", ylab = "semivarianza", xlab = "distancia",
+     ylim = c(0, 2), pch = 19)
+lines(variogramLine(object = varMejorTeoC1, maxdist = 500), col = "red", lwd = 1, lty = 1)
+legend("topleft", c("Exponencial"), lty = 1, col = "red")
+
+# Plotear variograma experimental y ajuste modelo teórico - C2
+plot(x = varOmniC2$dist, y = varOmniC2$gamma, main = "Modelos - C2",
+     col = "#0080FF", ylab = "semivarianza", xlab = "distancia",
+     ylim = c(0, 1.2), pch = 19)
+lines(variogramLine(object = varMejorTeoC2, maxdist = 500), col = "red", lwd = 1, lty = 1)
+legend("topleft", c("Exponencial"), lty = 1, col = "red")
 
 ```
 
@@ -1323,16 +1501,186 @@ likfitVarGeoC1.powexp$AIC
 
 > 4) Realice una interpolación para los datos de rinde de cada campaña mediante kriging ordinario puntual y kriging en bloque. Utilice una grilla de predicción hasta la mitad de fina que la originalmente provista para el kriging puntual y un tamaño de bloque que agrupe al menos nueve observaciones originales. Elabore para cada campaña tanto mapas del rinde de maíz predicho, como de la variabilidad de la predicción. Justifique todas las decisiones necesarias para realizar estas interpolaciones.  
 
+## Tamaño de la grilla y bloque 
+
+Para obtener una grilla de predicción de la mitad de fina que la originalmente provista, se utilizó una grilla de con un tamaño de celda de la mitad ($10 m$) que los datos originales ($20 m$) para realizar el *Kriging Ordinario Puntual*. Además se ajustó la extensión de la grilla de predicción para que ajustara a la original. Para obtener un tamaño de bloque que agrupó al menos nueve observaciones originales (teniendo en cuenta que los puntos originales están separados $20 m$ entre si), se utilizó un tamaño de bloque de $60 m x 60 m$ para realizar el *Kriging en Bloque*.
+
+```{r}
+
+# Crear nuevo borde
+bb <- matrix(data = c(bbox(datosRindeMaiz)["Long","min"],
+                      bbox(datosRindeMaiz)["Long","max"] + 10,
+                      bbox(datosRindeMaiz)["Lat","min"],
+                      bbox(datosRindeMaiz)["Lat","max"] + 10), 
+             2, 2, byrow = TRUE)
+
+colnames(bb) <- c("min", "max")
+rownames(bb) <- c("Long", "Lat")
+
+# Definir grilla donde predecir valores
+puntosPredecirC1 <- spsample(x = datosRindeMaiz,
+                             type = "regular",
+                             bb = bb,
+                             cellsize = 10, 
+                             offset = c(0,0))
+
+# Mostrar grilla 
+plot(datosRindeMaiz[500:510,], cex = 0)
+plot(datosRindeMaiz, pch = 19, add = TRUE)
+plot(puntosPredecirC1, pch = 19, col = "green", cex = 0.5, add = TRUE)
+
+```
+
 ## Kriging Ordinario Puntual
 
 ```{r}
 
+# Interpolacion por Kriging Ordinario (KO)
+intOK.C1 <- krige(formula = maizC1 ~ 1, 
+                  locations = datosRindeMaiz[-c(NAs, outliersC1),],
+                  newdata = puntosPredecirC1,
+                  model = varMejorTeoC1)
+
+# Predicho
+spplot(intOK.C1, zcol = "var1.pred")
+spplot(intOK.C1, zcol = "var1.var")
+
+# Visualizar como grilla
+intOK.C1.grid <- SpatialPixelsDataFrame(points = puntosPredecirC1, 
+                                        data = intOK.C1@data)
+
+spplot(intOK.C1.grid, main = "Kriging Ordinario C1 - valores pred", zcol = "var1.pred")
+spplot(intOK.C1.grid, main = "Kriging Ordinario C1 - varianza", zcol = "var1.var")
+
 ```
 
+```{r}
+
+# Definir grilla donde predecir valores
+puntosPredecirC2 <- spsample(x = datosRindeMaiz, type = "regular", n = nrow(datosRindeMaiz)*2)
+
+# Interpolacion por Kriging Ordinario (KO)
+intOK.C2 <- krige(formula = maizC2 ~ 1, 
+                  locations = datosRindeMaiz[-outliersC2,],
+                  newdata = puntosPredecirC2,
+                  model = varMejorTeoC2)
+
+# Predicho
+spplot(intOK.C2, zcol = "var1.pred")
+spplot(intOK.C2, zcol = "var1.var")
+
+# Visualizar como grilla
+intOK.C2.grid <- SpatialPixelsDataFrame(points = puntosPredecirC2, 
+                                        data = intOK.C2@data)
+
+spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - valores pred", zcol = "var1.pred")
+spplot(intOK.C2.grid, main = "Kriging Ordinario C2 - varianza", zcol = "var1.var")
+
+```
 
 ## Kriging en Bloque
 
 ```{r}
+
+# Interpolacion por Kriging en Bloque (BK)
+intBK.C1 <- krige(formula = maizC1 ~ 1, 
+                  locations = datosRindeMaiz[-c(NAs, outliersC1),],
+                  newdata = puntosPredecirC1,
+                  model = varMejorTeoC1, 
+                  block = c(60,60))
+
+# Predicho
+spplot(intBK.C1, zcol = "var1.pred")
+spplot(intBK.C1, zcol = "var1.var")
+
+# Visualizar como grilla
+intBK.C1.grid <- SpatialPixelsDataFrame(points = intBK.C1, 
+                                        data = intBK.C1@data)
+
+spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - predicciones", zcol = "var1.pred")
+spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - varianza", zcol = "var1.var")
+
+```
+
+```{r}
+
+# Interpolacion por Kriging en Bloque (BK)
+intBK.C2 <- krige(formula = maizC2 ~ 1, 
+                  locations = datosRindeMaiz[-outliersC2,],
+                  newdata = puntosPredecirC2,
+                  model = varMejorTeoC2, 
+                  block = c(60,60))
+
+# Predicho
+spplot(intBK.C2, zcol = "var1.pred")
+spplot(intBK.C2, zcol = "var1.var")
+
+# Visualizar como grilla
+intBK.C2.grid <- SpatialPixelsDataFrame(points = intBK.C2, 
+                                        data = intBK.C2@data)
+
+spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - predicciones", zcol = "var1.pred")
+spplot(intBK.C2.grid, main = "Kriging en Bloque C2 - varianza", zcol = "var1.var")
+
+```
+
+
+# Respuesta 5
+
+> 5) Realice un procedimiento de validación cruzada para el método de interpolación puntual para las campañas analizadas en el punto anterior. Presente resultados sumarios respecto del error de predicción para toda el área estudiada.
+
+## Validación cruzada
+
+```{r}
+
+# Cross validation functions for simple, ordinary or universal point (co)kriging, kriging in a local neighbourhood.
+gstat::krige.cv()
+
+# Interpolacion por Kriging en Bloque (BK)
+intBK.C1 <- krige(formula = maizC1 ~ 1, 
+                  locations = datosRindeMaiz[-c(NAs, outliersC1),],
+                  newdata = puntosPredecirC1,
+                  model = fitVarC1.CirREML, 
+                  block = c(60,60))
+
+# Predicho
+spplot(intBK.C1, zcol = "var1.pred")
+spplot(intBK.C1, zcol = "var1.var")
+
+# Visualizar como grilla
+intBK.C1.grid <- SpatialPixelsDataFrame(points = intBK.C1, 
+                                        data = intBK.C1@data)
+
+spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - predicciones", zcol = "var1.pred")
+spplot(intBK.C1.grid, main = "Kriging en Bloque C1 - varianza", zcol = "var1.var")
+
+
+```
+
+# Respuesta 6
+
+> 6) A partir de los modelos lineales regionalizados definidos en el punto 4, realice 300 simulaciones del proceso estocástico mediante kriging puntual ordinario para cada campaña. Asumiendo que ambas campañas fueron similares en cuanto al régimen de lluvias y la dinámica del acuífero elabore un mapa probabilístico que muestre la probabilidad de obtener rindes mayores a 9500 kg.ha-1 integrando la información de ambas campañas. Justifique todas las decisiones necesarias para elaborar este mapa. ¿Cuál es la superficie de este lote que tiene una probabilidad igual o mayor a 0.8 de alcanzar o superar el rinde umbral establecido?
+
+```{r}
+
+# Simulaciones (TP7) ------------------------------------------------------
+
+newdataCaChica <- spsample(x = ca20SPDF, type = "regular", n = 100)
+
+# Probabilidad del que el Ca sea mayor a 60 (hacer con 100)
+ca.bk.sim <- krige(formula = ca ~ 1, locations = ca20SPDF, newdata = newdataCaChica, model = varioCaFit, block = c(100,100), nsim = 10)
+
+# Hacer consulta para valores mayores a 60 de Ca
+# Para cada punto la probabilidad de que sea > 60
+
+prob <- numeric()
+
+for(i in 1:99) {
+
+ prob[i] <- which(ca.bk.sim@data[i,] > 60) / 10)
+  
+}
+
 
 ```
 

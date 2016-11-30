@@ -552,96 +552,153 @@ X11()
 #              layout_matrix = cbind(c(1,2,3,4,5), c(6,7,8,9,10), c(11,12,13,14,15), c(16,17,18,19,20))
 #              )
 
-# Con librería gstat:
-# # Nota: se utiliza la fórmula "maizC1 ~ NapaDicC1 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC1.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
-# 
-# # Crear variograma empírico omnidireccional - C1
-# varOmniC1 <- variogram(maizC1 ~ NapaDicC1 + Elev, 
-#                        data = datosRindeMaiz[-c(NAs, outliersC1),], 
-#                        width = 20, cutoff = 400)
-# 
-# # Plotear variograma 
-# plot(varOmniC1, xlab = "distancia", ylab = "semivarianza", 
-#      main = "Variograma empírico - C1", pch = 19)
+fitVarC1.Sph <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+                                  data = datosRindeMaiz[sampleC1,],
+                                  model = modTeoSph.C1,
+                                  cutoff = 400)
 
-# Con librería gstat:
-# # Nota: se utiliza la fórmula "maizC2 ~ NapaDicC2 + Elev" para explicitar el modelo de tendencia utilizado. Podría usarse la variable 'resAjusteC2.M1.SinOut' guardada también en el set de datos de datosRindeMaiz.
-# 
-# # Crear variograma empírico omnidireccional - C2
-# varOmniC2 <- variogram(maizC2 ~ NapaDicC2 + Elev, 
-#                        data = datosRindeMaiz[-outliersC2,], 
-#                        width = 20, cutoff = 400)
-# 
-# # Plotear variograma 
-# plot(varOmniC2, xlab = "distancia", ylab = "semivarianza", 
-#      main = "Variograma empírico - C2", pch = 19)
+fitVarC1.Exp <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+                                  data = datosRindeMaiz[sampleC1,],
+                                  model = modTeoExp.C1,
+                                  cutoff = 400)
 
-# Con gstat:
-# # Crear variograma empírico direccional - C1
-# varDirC1 <- variogram(maizC1 ~ NapaDicC1 + Elev,
-#                       data = datosRindeMaiz[-c(NAs,outliersC1),], 
-#                       width = 20, cutoff = 400,
-#                       alpha = c(0,45,90,135))
-# 
-# # Plotear variograma 
-# plot(varDirC1, xlab = "distancia", ylab = "semivarianza", main = "C1", pch = 19)
+fitVarC1.Cir <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
+                                  data = datosRindeMaiz[sampleC1,],
+                                  model = modTeoCir.C1,
+                                  cutoff = 400)
 
+# Tomar muestra aleatoria de 1000 puntos
+# sampleC1 <- sample(datosRindeMaiz$ID[-c(NAs, outliersC1)], size = 1000)
 
-# Con gstat:
-# varDirC2 <- variogram(maizC2 ~ NapaDicC2 + Elev,
-#                       data = datosRindeMaiz[-outliersC2,], 
-#                       width = 20, cutoff = 400,
-#                       alpha = c(0,45,90,135))
-# 
-# # Plotear variograma 
-# plot(varDirC2, xlab = "distancia", ylab = "semivarianza", main = "C2", pch = 19)
+# geoR
+intOK.C1 <- krige.control(type.krige = "OK", 
+                          trend.d = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                          trend.l = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                          obj.model = likfitVarGeoC1.powexp)
+intOK.C1b <- krige.conv(geodataC1, coords=geodataC1$coords, data=geodataC1$data,
+                        locations=coordinates(puntosPredecirC1), krige=intOK.C1)
 
-# # Ajustar modelo de variograma a C1
-# 
-# # Modelos teóricos 
-# 
-# # Esférico
-# modTeoSph.C1 <- vgm(psill = 1.7, model = "Sph", range = 200, nugget = 0)
-# 
-# # Exponencial
-# modTeoExp.C1 <- vgm(psill = 1.7, model = "Exp", range = 200, nugget = 0)
-# 
-# # Circular
-# modTeoCir.C1 <- vgm(psill = 1.7, model = "Cir", range = 200, nugget = 0)
-# 
-# # Tomar muestra aleatoria de 100 puntos
-# sampleC1 <- sample(datosRindeMaiz$ID[-c(NAs, outliersC1)], size = 150)
-# 
-# variog
-# 
-# # Ajustar modelos a variogramas
-# fitVarC1.Sph <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-#                                   data = datosRindeMaiz[sampleC1,],
-#                                   model = modTeoSph.C1,
-#                                   cutoff = 400) 
-# 
-# fitVarC1.Exp <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-#                                   data = datosRindeMaiz[sampleC1,],
-#                                   model = modTeoExp.C1,
-#                                   cutoff = 400) 
-# 
-# fitVarC1.Cir <- fit.variogram.gls(formula = maizC1 ~ NapaDicC1 + Elev,
-#                                   data = datosRindeMaiz[sampleC1,],
-#                                   model = modTeoCir.C1,
-#                                   cutoff = 400) 
-
-# fitVarC1.SphREML <- fit.variogram.reml(formula = maizC1 ~ NapaDicC1 + Elev,
-#                                    data = datosRindeMaiz[sampleC1,],
-#                                    model = modTeoSph.C1,
-#                                    debug.level = 65,
-#                                    set = list(iter=1000))
+image(intOK.C1, puntosPredecirC1)
 
 
 
-# # Plotear variograma experimental y ajuste modelo teórico
-# plot(x = varOmniC1$dist, y = varOmniC1$gamma, main = "Modelos", 
-#      col = "#0080FF", ylab = "semivarianza", xlab = "distancia", 
-#      ylim = c(0, 3), pch = 19)
-# lines(variogramLine(object = fitVarC1.Sph, maxdist = 500), col = "red", lwd = 1)
-# lines(variogramLine(object = fitVarC1.Exp, maxdist = 500), col = "red", lwd = 1, lty = 2)
+# geoR --------------------------------------------------------------------
+
+# Matriz de posibles parámetros iniciales de rango y meseta para C1
+iniCovParsC1 <- cbind("sigma" = seq(1, 3, length.out = 20),
+                      "phi" = seq(60, 240, length.out = 20))
+
+iniCovParsC1 <- as.matrix(iniCovParsC1) # convertir a matriz
+
+# Ajuste modelo exponencial
+# likfitVarGeoC1.exp <- likfit(geodataC1, 
+#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+#                              ini.cov.pars = iniCovParsC1,
+#                              fix.nugget = TRUE,
+#                              nugget = 0,
+#                              cov.model = "exponential", 
+#                              lik.method = "REML")
+
+# Ajuste modelo esférico
+# likfitVarGeoC1.sph <- likfit(geodataC1, 
+#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+#                              ini.cov.pars = iniCovParsC1,
+#                              limits = pars.limits(phi = c(200,250), sigmasq = c(1.7,1.9)), 
+#                              fix.nugget = TRUE,
+#                              nugget = 0,
+#                              cov.model = "spherical", 
+#                              lik.method = "REML")
+
+# Ajuste modelo potencia exponencial
+# likfitVarGeoC1.powexp <- likfit(geodataC1, 
+#                              trend = trend.spatial(data~NapaDicC1+Elev, geodataC1), 
+#                              ini.cov.pars = iniCovParsC1,
+#                              fix.nugget = TRUE,
+#                              fix.kappa = FALSE,
+#                              nugget = 0,
+#                              cov.model = "powered.exponential", 
+#                              lik.method = "REML")
+
+# Ajuste modelo circular
+likfitVarGeoC1.cir <- likfit(geodataC1,
+                             trend = trend.spatial(data~NapaDicC1+Elev, geodataC1),
+                             ini.cov.pars = iniCovParsC1,
+                             fix.nugget = FALSE,
+                             cov.model = "circular",
+                             lik.method = "REML")
+
+# Plot variograma empírico + modelos
+plot(varGeoC1, main = "C1",
+     ylab = "semivarianza", 
+     xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,4))
+lines.variomodel(likfitVarGeoC1.exp, col = "red", lty = 1)
+lines.variomodel(likfitVarGeoC1.sph, col = "red", lty = 2)
+lines.variomodel(likfitVarGeoC1.powexp, col = "red", lty = 3)
+grid()
+legend('topleft', lty = c(1,2,3), legend = c('Exp','Esf','PotExp'), col = rep("red",3))
+
+
+# gstat fit variogram -----------------------------------------------------
+
+fitVarOmniC1.1 <- fit.variogram(object = varOmniC1, model = modTeoSph.C1, fit.method = 7)
+
+# Ajustar modelo teórico a variograma empírico
+# mediante Máxima Verosimilitud Restringida (REML) 
+
+## Ajuste del Modelo Esférico
+
+fitVarC1.Sph.REML <- fit.variogram.reml(
+  formula = maizC1 ~ NapaDicC1 + Elev,
+  data = datosRindeMaiz[-c(NAs, outliersC1),],
+  model = vgm(psill=1.7, model="Sph", range=80, nugget=0),
+  debug.level = 65)
+# Resultado: Negative log-likelyhood: 1160.19
+
+fitVarC2.Sph.REML <- fit.variogram.reml(
+  formula = maizC2 ~ NapaDicC2 + Elev,
+  data = datosRindeMaiz[-outliersC2,],
+  model = vgm(psill=0.6, model="Sph", range=150, nugget=0),
+  debug.level = 65) 
+# Resultado: Negative log-likelyhood: 
+
+## Ajuste del Modelo Exponencial
+
+fitVarC1.Exp.REML <- fit.variogram.reml(
+  formula = maizC1 ~ NapaDicC1 + Elev,
+  data = datosRindeMaiz[-c(NAs, outliersC1),],
+  model = vgm(psill=1.7, model="Exp", range=80, nugget=0),
+  debug.level = 65)
+# Resultado: Negative log-likelyhood: -1197.16
+
+fitVarC2.Exp.REML <- fit.variogram.reml(
+  formula = maizC2 ~ NapaDicC2 + Elev,
+  data = datosRindeMaiz[-outliersC2,],
+  model = vgm(psill=0.8, model="Exp", range=100, nugget=0),
+  debug.level = 65)
+# Resultado: Negative log-likelyhood: 
+
+## Ajuste del Modelo Circular
+
+likfitVarGeoC1.cir
+# likfit: estimated model parameters:
+#      beta0      beta1      beta2      tausq    sigmasq        phi 
+# "  6.2981" " -2.3431" "  0.0503" "  0.1375" "  1.8341" "116.0787" 
+# Practical Range with cor=0.05 for asymptotic range: 116.0787
+# 
+# likfit: maximised log-likelihood = -2559
+
+fitVarC1.Cir.REML <- fit.variogram.reml(
+  formula = maizC1 ~ NapaDicC1 + Elev,
+  data = datosRindeMaiz[-c(NAs, outliersC1),],
+  model = vgm(psill=1.8341, model="Cir", range=116.0787, nugget=0.1375),
+  debug.level = 65)
+# Resultado: Negative log-likelyhood: -1105.18 (modelo elegido)
+
+fitVarC2.Cir.REML <- fit.variogram.reml(
+  formula = maizC2 ~ NapaDicC2 + Elev,
+  data = datosRindeMaiz[-outliersC2,],
+  model = vgm(psill=1, model="Cir", range=150, nugget=0),
+  debug.level = 65)
+# Resultado: Negative log-likelyhood: 
+
 
