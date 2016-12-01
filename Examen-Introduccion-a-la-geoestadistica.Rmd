@@ -3,11 +3,11 @@ title: "Evaluación curso Introducción a la Geoestadística"
 author: "Guzmán López"
 date: "30 de noviembre de 2016"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     highlight: textmate
     theme: cosmo
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -859,7 +859,7 @@ Se utilizó el criterio de información de Akaike ($AIC$) para definir el modelo
 
 ```{r}
 
-# Ajuste de moelos para C1
+# Ajuste de modelos para C1
 ajusteC1.M1 <- lm(formula = maizC1 ~ NapaDicC1 + Elev, data = datosRindeMaiz)
 ajusteC1.M2 <- lm(formula = maizC1 ~ NapaDicC1, data = datosRindeMaiz)
 ajusteC1.M3 <- lm(formula = maizC1 ~ Elev, data = datosRindeMaiz)
@@ -1377,12 +1377,17 @@ Para el ajuste de los modelos se asumió que el efecto pepita o nugget fue cero 
 ```{r, fig.height=6, fig.width=8, message=TRUE, warning=FALSE}
 
 # Se cargan los objetos previamente creados
-# para evitar hacer corridas muy demandantes de tiempo
+# para evitar hacer corridas muy demandantes de tiempo o generar otros
+# datos debido a muestreos aleatorios
 load("~/Documentos/GitHub/IntroductionToGeostatistics/data/RData.RData")
 
 # Tomar muestra para el ajuste de 500 puntos
+if(length(which(ls() == "geodataC1")) == 0) {
 geodataC1 <- sample.geodata(geodataC1, size = 500, replace = FALSE)
+}
+if(length(which(ls() == "geodataC2")) == 0) {
 geodataC2 <- sample.geodata(geodataC2, size = 500, replace = FALSE)
+}
 
 # Matriz de posibles parámetros iniciales de rango y meseta para C1
 iniCovParsC1 <- cbind("sigma" = seq(1,3,length.out = 20),
@@ -1431,7 +1436,7 @@ likfitVarGeoC1.cir <- likfit(geodataC1,
 
 # Plot variograma empírico + modelos
 plot(varGeoC1, main = "C1", ylab = "semivarianza", 
-     xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,4))
+     xlab = "distancia",  pch = 19, col = "#0080FF", ylim = c(0,2.5))
 lines.variomodel(likfitVarGeoC1.sph, col = "red", lty = 1)
 lines.variomodel(likfitVarGeoC1.exp, col = "red", lty = 2)
 lines.variomodel(likfitVarGeoC1.cir, col = "red", lty = 3)
@@ -1521,13 +1526,13 @@ print(AICmodelosC2)
 
 ```
 
-Para las dos campañas, el mejor ajuste del modelo de variograma teórico a los datos fue para el *Exponencial*. Se eligió dicho modelo debido a que presentó el $AIC$ más bajo ($AIC_{C1} = 1317.886$ y $AIC_{C2} = 979.6216$) comparando en cada caso frente a los modelos *Esférico* ($AIC_{C1} = 1331.098$ y $AIC_{C2} = 994.0059$) y *Circular* ($AIC_{C1} = 1359.595$ y $AIC_{C2} = 1024.4368$).
+Para la campaña C1 el mejor ajuste del modelo de variograma teórico a los datos fue para el *Circular* ($AICesf_{C1} = 1322.100$, $AICexp_{C1} = 1325.434$ y $AICcir_{C1} = 1321.998$) mientras que para la C2 fue el modelo *Exponencial* ($AICesf_{C2} = 1038.402$, $AICexp_{C2} = 1027.014$ y $AICcir_{C2} = 1069.704$). En ambos casos, se eligió dicho modelo debido a que presentó el $AIC$ más bajo.
 
 ```{r, fig.height=6, fig.width=12, message=TRUE, warning=FALSE}
 
-varMejorTeoC1 <- vgm(psill = likfitVarGeoC1.exp$sigmasq, 
-                     model = "Exp", 
-                     range = likfitVarGeoC1.exp$phi,
+varMejorTeoC1 <- vgm(psill = likfitVarGeoC1.cir$sigmasq, 
+                     model = "Cir", 
+                     range = likfitVarGeoC1.cir$phi,
                      nugget = 0)
 
 varMejorTeoC2 <- vgm(psill = likfitVarGeoC2.exp$sigmasq, 
@@ -1535,22 +1540,18 @@ varMejorTeoC2 <- vgm(psill = likfitVarGeoC2.exp$sigmasq,
                      range = likfitVarGeoC2.exp$phi,
                      nugget = 0)
 
+# Plotear variograma experimental y ajuste modelo teórico
 par(mfrow = c(1,2))
-
-# Plotear variograma experimental y ajuste modelo teórico - C1
 plot(x = varOmniC1$dist, y = varOmniC1$gamma, main = "Modelos - C1",
      col = "#0080FF", ylab = "semivarianza", xlab = "distancia",
-     ylim = c(0, 2), pch = 19)
+     ylim = c(0, 2.5), pch = 19)
 lines(variogramLine(object = varMejorTeoC1, maxdist = 500), col = "red", lwd = 1, lty = 1)
-legend("topleft", c("Exponencial"), lty = 1, col = "red")
-
-# Plotear variograma experimental y ajuste modelo teórico - C2
+legend("topleft", c("Circular"), lty = 1, col = "red")
 plot(x = varOmniC2$dist, y = varOmniC2$gamma, main = "Modelos - C2",
      col = "#0080FF", ylab = "semivarianza", xlab = "distancia",
-     ylim = c(0, 1.2), pch = 19)
+     ylim = c(0, 1.5), pch = 19)
 lines(variogramLine(object = varMejorTeoC2, maxdist = 500), col = "red", lwd = 1, lty = 1)
 legend("topleft", c("Exponencial"), lty = 1, col = "red")
-
 par(mfrow = c(1,1))
 
 ```
@@ -1711,8 +1712,8 @@ Se observó que el valor de predicción global ($RMSE$) fue mejor para la C2 que
 ```{r, fig.height=10, fig.width=12, message=TRUE, warning=FALSE}
 
 # Validación cruzada mediante partición de los datos en 1000 partes.
-# Las predicicones estarán basadas en las restantes N-1 partes para un conjunto 
-# de onservaciones de la parte N.
+# Las predicciones estarán basadas en las restantes N-1 partes para un conjunto 
+# de observaciones de la parte N.
 
 if(length(which(ls() == "vcOK.C1")) == 0) {
 
@@ -1803,11 +1804,11 @@ vcResumen <- data.frame("Indicador" = c("Error.medio",
 
 ## Simulaciones del proceso estocástico
 
-**Nota: ** Dado que para cada nodo visitado del set de datos el *algoritmo de simulación secuencial* simula un valor y este valor es agregado a los datos, el tiempo computacional requerido para realizar 300 simulaciones utilizando por defecto todos los puntos para cada nodo visitado es muy grande. Por eso se restringió a un radio de vecinos dado por todos los puntos encontrados a una distancia menor a $100 m$.
+**Nota: ** Dado que para cada nodo visitado del set de datos el *algoritmo de simulación secuencial* simula un valor y este valor es agregado a los datos, el tiempo computacional requerido para realizar 300 simulaciones utilizando por defecto todos los puntos para cada nodo visitado es muy grande. Por eso se restringió a un radio de vecinos dado por todos los puntos encontrados a una distancia menor a $120 m$.
 
 ```{r}
 
-# Interpolacion por Kriging Ordinario (KO)
+# Simulación por Kriging Ordinario (KO)
 
 if(length(which(ls() == "KOSim.C1")) == 0) {
   
@@ -1815,7 +1816,7 @@ KOSim.C1 <- krige(formula = maizC1 ~ 1,
                   locations = datosRindeMaiz[-c(NAs,outliersC1),],
                   newdata = puntosPredecir,
                   model = varMejorTeoC1,
-                  nsim = 300, maxdist = 100)
+                  nsim = 300, maxdist = 120)
 }
 
 if(length(which(ls() == "KOSim.C2")) == 0) {
@@ -1824,7 +1825,7 @@ KOSim.C2 <- krige(formula = maizC2 ~ 1,
                   locations = datosRindeMaiz[-outliersC2,],
                   newdata = puntosPredecir,
                   model = varMejorTeoC2,
-                  nsim = 300, maxdist = 100)
+                  nsim = 300, maxdist = 120)
 }
 
 ```
@@ -1854,6 +1855,7 @@ for(i in 1:nroCeldas) {
   probRinde[i] <- (probC1 + probC2) / 2
   
 }
+
 }
 
 # Crear objeto espacial
@@ -1876,7 +1878,7 @@ spplot(probRindeMayor9500.grid, main = "Probabilidad Rindes > 9500 kg.ha-1",
 
 ## Cálculo de superficie
 
-La superficie estimada del lote que tiene una probabilidad igual o mayor a $0.8$ de alcanzar o superar el rinde umbral establecido fue de $88900 m^{2}$. Equivale a casi el $10\%$ ($9.82\%$) de la superficie total del lote. 
+La superficie estimada del lote que tiene una probabilidad igual o mayor a $0.8$ de alcanzar o superar el rinde umbral establecido fue de $88600 m^{2}$. Equivale a casi el $10\%$ ($9.79\%$) de la superficie total del lote. 
 
 ```{r}
 
@@ -1896,7 +1898,7 @@ paste("Área total que cumple condición: ",
 
 # Calcular porcentaje del lote
 areaTotalLote <- length(probRindeMayor9500.grid$ID) * areaCelda
-porcentajeAreaTotalCeldasCumplenCondicion <- (areaTotalCeldasCumplenCondicion/areaTotalLote)*100
+porcentajeAreaTotalCeldasCumplenCondicion <- (areaTotal/areaTotalLote)*100
 paste("Porcentaje del Área total del lote que cumple condición: ",
       round(porcentajeAreaTotalCeldasCumplenCondicion, digits = 2), " %",
       sep = "")
